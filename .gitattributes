@@ -1,3 +1,4 @@
 public/stockfish/stockfish-18-single.wasm filter=lfs diff=lfs merge=lfs -text
 public/stockfish/stockfish-18-es.wasm filter=lfs diff=lfs merge=lfs -text
 *.wasm filter=lfs diff=lfs merge=lfs -text
+public/stockfish/*.wasm filter=lfs diff=lfs merge=lfs -text
