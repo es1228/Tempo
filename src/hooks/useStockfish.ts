@@ -10,7 +10,16 @@ type useStockfishProps = {
 
 const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 	// data
-	const [bestMove, setBestMove] = useState<string>("");
+	const [bestMove, setBestMove] = useState<string | null>(null);
+	const [isThinking, setIsThinking] = useState(false);
+
+	// store fen as ref
+	const fenRef = useRef(fen);
+
+	// sync fen
+	useEffect(() => {
+		fenRef.current = fen;
+	}, [fen])
 
 	// store the stockfish
 	const stockfishRef = useRef<Worker | null>(null);
@@ -28,7 +37,9 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 			// extract best move
 			if (event.data.includes("bestmove")) {
 				const uci = event.data.split(" ")[1];
-				setBestMove(uciToSan(fen, uci));
+				const currentFen = fenRef.current;
+				setBestMove(uciToSan(currentFen, uci));
+				setIsThinking(false);
 			}
 		};
 
@@ -46,6 +57,10 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 		const stockfish = stockfishRef.current;
 		if (!stockfish) return;
 
+		// set thinking
+		setIsThinking(true);
+		setBestMove(null);
+
 		// stop old analysis
 		stockfish.postMessage("stop");
 		stockfish.postMessage("ucinewgame");
@@ -56,10 +71,13 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 		stockfish.postMessage(`go depth ${depth}`);
 
 		// cleanup
-		return () => stockfish.postMessage("stop");
+		return () => {
+			stockfish.postMessage("stop");
+			setIsThinking(false);
+		}
 	}, [fen]);
 
 	// return the result
-	return { bestMove };
+	return { bestMove, isThinking };
 };
 export default useStockfish;

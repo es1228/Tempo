@@ -143,7 +143,6 @@ const useBoard = () => {
 	// board options
 	const options: ChessboardOptions = {
 		position: chessPosition,
-		showAnimations: true,
 		onPieceDrop,
 		onSquareClick,
 		squareStyles: optionSquares,
