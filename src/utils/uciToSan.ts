@@ -17,6 +17,6 @@ export const uciToSan = (fen: string, uci: string) => {
 		// return the san
 		return move.san;
 	} catch {
-		return "Illegal Move";
+		return "None";
 	}
 };

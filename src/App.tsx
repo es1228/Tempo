@@ -5,7 +5,7 @@ import { Chessboard } from "react-chessboard";
 const App = () => {
 	const { options, chessPosition } = useBoard();
 
-	const { bestMove, isThinking } = useStockfish({
+	const { bestMove, evaluation, isThinking } = useStockfish({
 		fen: chessPosition,
 		depth: 18,
 		lines: 1,
@@ -17,6 +17,7 @@ const App = () => {
 				<Chessboard options={options} />
 			</div>
 			<p>The Best Move Is: {isThinking ? "Loading..." : bestMove}</p>
+			<p>Evaluation: {evaluation}</p>
 		</>
 	);
 };
