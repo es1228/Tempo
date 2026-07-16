@@ -11,9 +11,9 @@ type useStockfishProps = {
 
 const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 	// data
-	const [bestMove, setBestMove] = useState<string | null>(null);
-	const [evaluation, setEvaluation] = useState("");
-	const [isThinking, setIsThinking] = useState(false);
+	const [bestMove, setBestMove] = useState<string>("");
+	const [evaluation, setEvaluation] = useState<string[]>([]);
+	const [isThinking, setIsThinking] = useState<boolean>(false);
 
 	// store fen as ref
 	const fenRef = useRef(fen);
@@ -48,9 +48,10 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 			if (event.data.includes("info") && event.data.includes("score")) {
 				// parse top line
 				if (
-					event.data.includes("multipv") ||
-					event.data.includes("multipv 1") ||
-					event.data.includes("depth 0")
+					(event.data.includes("multipv") ||
+						event.data.includes("multipv 1")) &&
+					(event.data.includes(" depth 0") ||
+						event.data.includes(` depth ${depth}`))
 				) {
 					// extract score
 					const parts = event.data.split(" ");
@@ -66,18 +67,23 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 
 					// check the score type
 					if (scoreType === "cp") {
-						setEvaluation(`${score > 0 ? "+" : ""}${score / 100}`);
+						setEvaluation((prevEval) => [
+							...prevEval,
+							`${score > 0 ? "+" : ""}${score / 100}`,
+						]);
 					} else if (scoreType === "mate") {
 						// eventual checkmate
-						setEvaluation(
+						setEvaluation((prevEval) => [
+							...prevEval,
 							`${score > 0 ? "+" : "-"}M${Math.abs(score)}`,
-						);
+						]);
 
 						// current checkmate
 						if (score === 0) {
-							setEvaluation(
+							setEvaluation((prevEval) => [
+								...prevEval,
 								`${activePlayer === "w" ? "-" : "+"}M${score}`,
-							);
+							]);
 						}
 					}
 				}
@@ -100,7 +106,7 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 
 		// set thinking
 		setIsThinking(true);
-		setBestMove(null);
+		setBestMove("");
 
 		// stop old analysis
 		stockfish.postMessage("stop");

@@ -11,6 +11,8 @@ const useBoard = () => {
 	const chessGameRef = useRef(new Chess());
 	const chessGame = chessGameRef.current;
 	const [chessPosition, setChessPosition] = useState(chessGame.fen());
+	const [chessPGN, setChessPGN] = useState(chessGame.pgn());
+	const [lastMove, setLastMove] = useState("");
 
 	const [moveFrom, setMoveFrom] = useState("");
 	const [optionSquares, setOptionSquares] = useState({});
@@ -35,6 +37,12 @@ const useBoard = () => {
 
 			// update position
 			setChessPosition(chessGame.fen());
+			setChessPGN(chessGame.pgn());
+
+			// get the last move
+			const history = chessGame.history();
+			const movePlayed = history[history.length - 1];
+			setLastMove(movePlayed);
 
 			// clear movefrom and optionsquares
 			setMoveFrom("");
@@ -134,6 +142,12 @@ const useBoard = () => {
 
 		// update position
 		setChessPosition(chessGame.fen());
+		setChessPGN(chessGame.pgn());
+
+		// get the last move
+		const history = chessGame.history();
+		const movePlayed = history[history.length - 1];
+		setLastMove(movePlayed);
 
 		// clear movefrom and optionsquares
 		setMoveFrom("");
@@ -148,6 +162,6 @@ const useBoard = () => {
 		squareStyles: optionSquares,
 		id: "board",
 	};
-    return {options, chessPosition}
+	return { options, chessPosition, chessPGN, lastMove };
 };
 export default useBoard;

@@ -1,9 +1,10 @@
 import useStockfish from "./hooks/useStockfish";
 import useBoard from "./hooks/useBoard";
 import { Chessboard } from "react-chessboard";
+import useClassify from "./hooks/useClassify";
 
 const App = () => {
-	const { options, chessPosition } = useBoard();
+	const { options, chessPosition, chessPGN, lastMove } = useBoard();
 
 	const { bestMove, evaluation, isThinking } = useStockfish({
 		fen: chessPosition,
@@ -11,13 +12,22 @@ const App = () => {
 		lines: 1,
 	});
 
+	const { classification, opening } = useClassify(
+		chessPGN,
+		bestMove,
+		Number(evaluation[evaluation.length - 2]),
+		Number(evaluation[evaluation.length - 1]),
+	);
+
 	return (
 		<>
 			<div className="w-100">
 				<Chessboard options={options} />
 			</div>
 			<p>The Best Move Is: {isThinking ? "Loading..." : bestMove}</p>
-			<p>Evaluation: {evaluation}</p>
+			<p>Evaluation: {evaluation[evaluation.length - 1]}</p>
+			<p>{lastMove} is {classification} </p>
+			<p>Opening: {opening}</p>
 		</>
 	);
 };
