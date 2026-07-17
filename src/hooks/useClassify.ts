@@ -8,18 +8,27 @@ const useClassify = (
 	bestMove: string,
 	evaluation1: number,
 	evaluation2: number,
+	isThinking: boolean,
 ) => {
 	// variables
 	const [classification, setClassification] = useState("");
 	const [opening, setOpening] = useState("");
 
 	useEffect(() => {
+		// prevent old data
+		let isActive = true;
+		setClassification("Loading...");
+
+		if (isThinking) return;
+
 		const runClassification = async () => {
 			// theory
 
 			// load the previous position
 			const chess = new Chess();
 			chess.loadPgn(pgn);
+
+			if (!isActive) return;
 
 			// classify as theory if the pgn matches an openings database
 			const opening = await checkOpenings(chess.fen());
@@ -28,6 +37,8 @@ const useClassify = (
 				setOpening(opening);
 				return;
 			}
+
+			if (!isActive) return;
 
 			// forced moves
 			const lastMove = chess.undo();
@@ -52,17 +63,25 @@ const useClassify = (
 			const movePlayed = history[history.length - 1];
 
 			// compare with best move or end early if it is checkmate
-			if (movePlayed === bestMove || chess.isCheckmate()){
+			if (movePlayed === bestMove || chess.isCheckmate()) {
 				setClassification("best");
 				return;
 			}
 
 			// other classifications using expected points model
-			setClassification(expectedPoints(evaluation1, evaluation2));
+			const colorTurn = chess.turn();
+			setClassification(
+				expectedPoints(evaluation1, evaluation2, colorTurn),
+			);
 			return;
 		};
 		runClassification();
-	}, [pgn, bestMove, evaluation1, evaluation2]);
+
+		// cleanup
+		return () => {
+			isActive = false;
+		};
+	}, [pgn, bestMove, evaluation1, evaluation2, isThinking]);
 	// return data
 	return { classification, opening };
 };

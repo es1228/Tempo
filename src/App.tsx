@@ -17,6 +17,7 @@ const App = () => {
 		bestMove,
 		Number(evaluation[evaluation.length - 2]),
 		Number(evaluation[evaluation.length - 1]),
+		isThinking
 	);
 
 	return (
@@ -26,8 +27,8 @@ const App = () => {
 			</div>
 			<p>The Best Move Is: {isThinking ? "Loading..." : bestMove}</p>
 			<p>Evaluation: {evaluation[evaluation.length - 1]}</p>
-			<p>{lastMove} is {classification} </p>
-			<p>Opening: {opening}</p>
+			<p>{lastMove && `${lastMove} is ${isThinking ? "Loading..." : classification}`}</p>
+			<p>{opening && `Opening: ${opening}`}</p>
 		</>
 	);
 };
