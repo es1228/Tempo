@@ -15,7 +15,25 @@ const useBoard = () => {
 	const [lastMove, setLastMove] = useState("");
 
 	const [moveFrom, setMoveFrom] = useState("");
-	const [optionSquares, setOptionSquares] = useState({});
+	const [optionSquares, setOptionSquares] = useState<
+		Record<string, CSSProperties>
+	>({});
+
+	// sync the game state
+	const syncGameState = () => {
+		// update position
+		setChessPosition(chessGame.fen());
+		setChessPGN(chessGame.pgn());
+
+		// get the last move
+		const history = chessGame.history();
+		const movePlayed = history[history.length - 1];
+		setLastMove(movePlayed);
+
+		// clear movefrom and optionsquares
+		setMoveFrom("");
+		setOptionSquares({});
+	};
 
 	// piece dropping logic
 	const onPieceDrop = ({
@@ -35,18 +53,7 @@ const useBoard = () => {
 				promotion: "q",
 			});
 
-			// update position
-			setChessPosition(chessGame.fen());
-			setChessPGN(chessGame.pgn());
-
-			// get the last move
-			const history = chessGame.history();
-			const movePlayed = history[history.length - 1];
-			setLastMove(movePlayed);
-
-			// clear movefrom and optionsquares
-			setMoveFrom("");
-			setOptionSquares({});
+			syncGameState();
 
 			return true;
 		} catch {
@@ -61,7 +68,7 @@ const useBoard = () => {
 
 		// clear square if no moves
 		if (moves.length === 0) {
-			setOptionSquares("");
+			setOptionSquares({});
 			return false;
 		}
 
@@ -140,18 +147,7 @@ const useBoard = () => {
 			return;
 		}
 
-		// update position
-		setChessPosition(chessGame.fen());
-		setChessPGN(chessGame.pgn());
-
-		// get the last move
-		const history = chessGame.history();
-		const movePlayed = history[history.length - 1];
-		setLastMove(movePlayed);
-
-		// clear movefrom and optionsquares
-		setMoveFrom("");
-		setOptionSquares({});
+		syncGameState();
 	};
 
 	// board options
@@ -160,6 +156,9 @@ const useBoard = () => {
 		onPieceDrop,
 		onSquareClick,
 		squareStyles: optionSquares,
+		boardStyle: {
+			borderRadius: 10
+		},
 		id: "board",
 	};
 	return { options, chessPosition, chessPGN, lastMove };

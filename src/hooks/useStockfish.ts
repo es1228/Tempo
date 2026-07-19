@@ -50,8 +50,7 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 				if (
 					(event.data.includes("multipv") ||
 						event.data.includes("multipv 1")) &&
-					(event.data.includes(" depth 0") ||
-						event.data.includes(` depth ${depth}`))
+					event.data.includes(` depth ${depth}`)
 				) {
 					// extract score
 					const parts = event.data.split(" ");
@@ -69,23 +68,24 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 					if (scoreType === "cp") {
 						setEvaluation((prevEval) => [
 							...prevEval,
-							`${score > 0 ? "+" : ""}${score / 100}`,
+							`${score > 0 ? "+" : ""}${(score / 100).toFixed(1)}`,
 						]);
 					} else if (scoreType === "mate") {
-						// eventual checkmate
 						setEvaluation((prevEval) => [
 							...prevEval,
 							`${score > 0 ? "+" : "-"}M${Math.abs(score)}`,
 						]);
-
-						// current checkmate
-						if (score === 0) {
-							setEvaluation((prevEval) => [
-								...prevEval,
-								`${activePlayer === "w" ? "-" : "+"}M${score}`,
-							]);
-						}
 					}
+				}
+				if (event.data.includes("mate 0")) {
+					// check active player
+					const activePlayer = checkActivePlayer(fenRef.current);
+
+					// set the sign
+					const sign = activePlayer === "b" ? "+" : "-";
+
+					// set the evaluation to checkmate
+					setEvaluation((prevEval) => [...prevEval, `${sign}M0`]);
 				}
 			}
 		};

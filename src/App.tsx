@@ -2,6 +2,11 @@ import useStockfish from "./hooks/useStockfish";
 import useBoard from "./hooks/useBoard";
 import { Chessboard } from "react-chessboard";
 import useClassify from "./hooks/useClassify";
+import { convertEvaluation } from "./utils/convertEvaluation";
+import Navbar from "./components/Navbar";
+import Header from "./components/Header";
+import useTheme from "./hooks/useTheme";
+import EvalBar from "./components/EvalBar";
 
 const App = () => {
 	const { options, chessPosition, chessPGN, lastMove } = useBoard();
@@ -15,20 +20,32 @@ const App = () => {
 	const { classification, opening } = useClassify(
 		chessPGN,
 		bestMove,
-		Number(evaluation[evaluation.length - 2]),
-		Number(evaluation[evaluation.length - 1]),
-		isThinking
+		convertEvaluation(evaluation[evaluation.length - 2]),
+		convertEvaluation(evaluation[evaluation.length - 1]),
+		isThinking,
 	);
+
+	const { theme } = useTheme();
+	console.log(theme);
 
 	return (
 		<>
-			<div className="w-100">
-				<Chessboard options={options} />
+			<Header />
+			<Navbar onClick={() => {}} page="Review" />
+			<div className="mx-4 mt-30 flex gap-2 justify-center">
+				<EvalBar evaluation={evaluation[evaluation.length - 1]}/>
+				<div className="w-auto md:w-120">
+					<Chessboard options={options} />
+				</div>
 			</div>
-			<p>The Best Move Is: {isThinking ? "Loading..." : bestMove}</p>
-			<p>Evaluation: {evaluation[evaluation.length - 1]}</p>
-			<p>{lastMove && `${lastMove} is ${isThinking ? "Loading..." : classification}`}</p>
-			<p>{opening && `Opening: ${opening}`}</p>
+			<div className="text-center">
+				<p>The Best Move Is: {isThinking ? "Loading..." : bestMove}</p>
+				<p>
+					{lastMove &&
+						`${lastMove} is ${isThinking ? "Loading..." : classification}`}
+				</p>
+				<p>{opening && `Opening: ${opening}`}</p>
+			</div>
 		</>
 	);
 };
