@@ -5,8 +5,13 @@ import type {
 	PieceDropHandlerArgs,
 	SquareHandlerArgs,
 } from "react-chessboard";
+import type { BoardColors } from "../types/BoardColors";
 
-const useBoard = () => {
+type useBoardProps = {
+	boardOrientation: BoardColors;
+}
+
+const useBoard = ({boardOrientation}: useBoardProps) => {
 	// data
 	const chessGameRef = useRef(new Chess());
 	const chessGame = chessGameRef.current;
@@ -159,6 +164,7 @@ const useBoard = () => {
 		boardStyle: {
 			borderRadius: 10
 		},
+		boardOrientation: boardOrientation, 
 		id: "board",
 	};
 	return { options, chessPosition, chessPGN, lastMove };

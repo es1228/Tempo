@@ -1,0 +1,1 @@
+export type BoardColors = "white" | "black";

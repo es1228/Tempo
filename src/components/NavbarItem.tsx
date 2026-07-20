@@ -1,4 +1,4 @@
-import type { Pages } from "../types/pages";
+import type { Pages } from "../types/Pages";
 
 type NavbarItemProps = {
 	icon: string;

@@ -7,9 +7,14 @@ import Navbar from "./components/Navbar";
 import Header from "./components/Header";
 import useTheme from "./hooks/useTheme";
 import EvalBar from "./components/EvalBar";
+import Button from "./components/Button";
+import { useState } from "react";
 
 const App = () => {
-	const { options, chessPosition, chessPGN, lastMove } = useBoard();
+	const [isFlipped, setIsFlipped] = useState<boolean>(false);
+	const { options, chessPosition, chessPGN, lastMove } = useBoard({
+		boardOrientation: isFlipped ? "black" : "white",
+	});
 
 	const { bestMove, evaluation, isThinking } = useStockfish({
 		fen: chessPosition,
@@ -32,11 +37,21 @@ const App = () => {
 		<>
 			<Header />
 			<Navbar onClick={() => {}} page="Review" />
-			<div className="mx-4 mt-30 flex gap-2 justify-center">
-				<EvalBar evaluation={evaluation[evaluation.length - 1]}/>
+			<div className="mx-4 mt-30 flex justify-center gap-2">
+				<EvalBar
+					evaluation={evaluation[evaluation.length - 1]}
+					isFlipped={isFlipped}
+				/>
 				<div className="w-auto md:w-120">
 					<Chessboard options={options} />
 				</div>
+			</div>
+			<div className="flex justify-center">
+				<Button
+					text="Flip"
+					icon="cached"
+					onClick={() => setIsFlipped(!isFlipped)}
+				/>
 			</div>
 			<div className="text-center">
 				<p>The Best Move Is: {isThinking ? "Loading..." : bestMove}</p>
