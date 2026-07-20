@@ -167,6 +167,6 @@ const useBoard = ({boardOrientation}: useBoardProps) => {
 		boardOrientation: boardOrientation, 
 		id: "board",
 	};
-	return { options, chessPosition, chessPGN, lastMove };
+	return { options, chessPosition, setChessPosition, chessGameRef, chessPGN, lastMove };
 };
 export default useBoard;

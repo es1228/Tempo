@@ -9,12 +9,14 @@ import useTheme from "./hooks/useTheme";
 import EvalBar from "./components/EvalBar";
 import Button from "./components/Button";
 import { useState } from "react";
+import { undoMove } from "./utils/undoMove";
 
 const App = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
-	const { options, chessPosition, chessPGN, lastMove } = useBoard({
-		boardOrientation: isFlipped ? "black" : "white",
-	});
+	const { options, chessPosition, setChessPosition, chessGameRef, chessPGN, lastMove } =
+		useBoard({
+			boardOrientation: isFlipped ? "black" : "white",
+		});
 
 	const { bestMove, evaluation, isThinking } = useStockfish({
 		fen: chessPosition,
@@ -47,6 +49,11 @@ const App = () => {
 				</div>
 			</div>
 			<div className="flex justify-center">
+				<Button
+					text="Undo"
+					icon="undo"
+					onClick={() => setChessPosition(undoMove(chessGameRef.current))}
+				/>
 				<Button
 					text="Flip"
 					icon="cached"
