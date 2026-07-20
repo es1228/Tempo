@@ -50,9 +50,14 @@ const App = () => {
 			</div>
 			<div className="flex justify-center">
 				<Button
+					text="Undo Full"
+					icon="undo"
+					onClick={() => setChessPosition(undoMove(chessGameRef.current, true))}
+				/>
+				<Button
 					text="Undo"
 					icon="undo"
-					onClick={() => setChessPosition(undoMove(chessGameRef.current))}
+					onClick={() => setChessPosition(undoMove(chessGameRef.current, false))}
 				/>
 				<Button
 					text="Flip"
