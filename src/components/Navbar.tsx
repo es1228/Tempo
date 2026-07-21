@@ -8,15 +8,15 @@ type NavbarProps = {
 
 const Navbar = ({ onClick, page }: NavbarProps) => {
 	return (
-		<div className="bg-on-bg/70 dark:bg-on-bg-dark/70 md:rounded-out-tr-2xl fixed right-0 bottom-0 left-0 z-100000 p-2 backdrop-blur-2xl md:top-18 md:w-fit">
-			<ul className="flex h-full justify-center gap-2 text-lg md:flex-col">
+		<div className="bg-on-bg/70 dark:bg-on-bg-dark/70 lg:rounded-out-tr-2xl fixed right-0 bottom-0 left-0 z-100000 p-2 backdrop-blur-2xl lg:top-18 lg:w-fit">
+			<ul className="flex h-full justify-center gap-2 text-lg lg:flex-col">
 				<NavbarItem
 					icon="search"
 					text="Review"
 					onClick={onClick}
 					page={page}
 				/>
-				<div className="md:mt-auto">
+				<div className="lg:mt-auto">
 					<NavbarItem
 						icon="settings"
 						text="Settings"

@@ -35,6 +35,8 @@ const useBoard = ({boardOrientation}: useBoardProps) => {
 		const movePlayed = history[history.length - 1];
 		setLastMove(movePlayed);
 
+		console.log(chessGame.history())
+
 		// clear movefrom and optionsquares
 		setMoveFrom("");
 		setOptionSquares({});
