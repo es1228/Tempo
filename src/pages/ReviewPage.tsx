@@ -9,6 +9,7 @@ import { convertEvaluation } from "../utils/convertEvaluation";
 import ImportDialog from "../components/ImportDialog";
 import PlayerContainer from "../components/PlayerContainer";
 import MoveFeedbackContainer from "../components/MoveFeedbackContainer";
+import HistoryContainer from "../components/HistoryContainer";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -101,6 +102,7 @@ const ReviewPage = () => {
 						}
 						opening={`${opening && `${opening}`}`}
 					/>
+					<HistoryContainer history={history} goToMove={goToMove}/>
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
 							icon="first_page"

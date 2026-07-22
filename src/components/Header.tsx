@@ -13,7 +13,7 @@ const Header = () => {
 						onClick={() =>
 							open("https://github.com/es1228/Tempo")
 						}
-						icon="code"
+						icon="folder_code"
 						text="Repo"
 					/>
 					<HeaderItem
@@ -22,8 +22,8 @@ const Header = () => {
 								"https://raw.githubusercontent.com/es1228/Tempo/main/README.md",
 							)
 						}
-						icon="info"
-						text="About"
+						icon="book"
+						text="README"
 					/>
 				</ul>
 			</nav>
