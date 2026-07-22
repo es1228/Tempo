@@ -14,9 +14,14 @@ import Searchbar from "./SearchBar";
 type ImportDialogProps = {
 	isDialogOpen: boolean;
 	closeDialog: () => void;
+	handleImport: (data: any) => void;
 };
 
-const ImportDialog = ({ isDialogOpen, closeDialog }: ImportDialogProps) => {
+const ImportDialog = ({
+	isDialogOpen,
+	closeDialog,
+	handleImport,
+}: ImportDialogProps) => {
 	// data
 	const [playerID, setPlayerID] = useState<string>("");
 	const [month, setMonth] = useState<number>(0);
@@ -83,7 +88,9 @@ const ImportDialog = ({ isDialogOpen, closeDialog }: ImportDialogProps) => {
 			<div className="w-full">
 				<Button
 					onClick={() => {
-						selectedValue === "Chess.com" && setPlayerID(textValue);
+						selectedValue === "Chess.com"
+							? setPlayerID(textValue)
+							: handleImport(textValue);
 					}}
 					icon="check"
 					text="Enter"
@@ -141,6 +148,10 @@ const ImportDialog = ({ isDialogOpen, closeDialog }: ImportDialogProps) => {
 										? game.white.result
 										: game.black.result
 								}
+								onClick={() => {
+									handleImport(game.pgn);
+									closeDialog();
+								}}
 							/>
 						))}
 					</ul>

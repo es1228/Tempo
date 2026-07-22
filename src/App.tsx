@@ -2,7 +2,7 @@ import Navbar from "./components/Navbar";
 import Header from "./components/Header";
 import useTheme from "./hooks/useTheme";
 import useFetchChessCom from "./hooks/useFetchChessCom";
-import EvalPage from "./pages/ReviewPage";
+import ReviewPage from "./pages/ReviewPage";
 
 const App = () => {
 
@@ -20,7 +20,7 @@ const App = () => {
 		<>
 			<Header />
 			<Navbar onClick={() => {}} page="Review" />
-			<EvalPage />
+			<ReviewPage />
 		</>
 	);
 };

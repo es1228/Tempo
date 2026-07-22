@@ -1,4 +1,4 @@
-import { Chess, type Square } from "chess.js";
+import { Chess, Move, validateFen, type Square } from "chess.js";
 import { useRef, useState, type CSSProperties } from "react";
 import type {
 	ChessboardOptions,
@@ -9,15 +9,16 @@ import type { BoardColors } from "../types/BoardColors";
 
 type useBoardProps = {
 	boardOrientation: BoardColors;
-}
+};
 
-const useBoard = ({boardOrientation}: useBoardProps) => {
+const useBoard = ({ boardOrientation }: useBoardProps) => {
 	// data
 	const chessGameRef = useRef(new Chess());
 	const chessGame = chessGameRef.current;
 	const [chessPosition, setChessPosition] = useState(chessGame.fen());
-	const [chessPGN, setChessPGN] = useState(chessGame.pgn());
-	const [lastMove, setLastMove] = useState("");
+	const [chessPGN, setChessPGNState] = useState(chessGame.pgn());
+	const [history, setHistory] = useState<Move[]>([]);
+	const [currentMove, setCurrentMove] = useState<number>(-1);
 
 	const [moveFrom, setMoveFrom] = useState("");
 	const [optionSquares, setOptionSquares] = useState<
@@ -25,21 +26,55 @@ const useBoard = ({boardOrientation}: useBoardProps) => {
 	>({});
 
 	// sync the game state
-	const syncGameState = () => {
+	const syncGameState = (overrideHistory?: Move[]) => {
 		// update position
 		setChessPosition(chessGame.fen());
-		setChessPGN(chessGame.pgn());
+		setChessPGNState(chessGame.pgn());
 
-		// get the last move
-		const history = chessGame.history();
-		const movePlayed = history[history.length - 1];
-		setLastMove(movePlayed);
-
-		console.log(chessGame.history())
-
+		// get history
+		const history = overrideHistory ?? chessGame.history({ verbose: true });
+		setHistory(history);
 		// clear movefrom and optionsquares
 		setMoveFrom("");
 		setOptionSquares({});
+	};
+
+	// pgn import
+	const setChessPGN = (pgn: string) => {
+		try {
+			const trimmed = pgn.trim();
+			// if the pgn is actually a fen
+			if (validateFen(trimmed).ok) {
+				chessGame.load(trimmed);
+				setCurrentMove(-1);
+				syncGameState();
+				return;
+			}
+
+			chessGame.loadPgn(trimmed);
+			const fullHistory = chessGame.history({ verbose: true });
+
+			chessGame.reset();
+			setCurrentMove(-1);
+			syncGameState(fullHistory);
+		} catch {
+			console.error("Unable to load pgn");
+		}
+	};
+
+	// go to move
+	const goToMove = (index: number) => {
+		if (!history || history.length === 0) return;
+
+		// restrict index
+		const clampedIndex = Math.max(-1, Math.min(index, history.length - 1));
+
+		// reset to start and go until move is found
+		chessGame.reset();
+		for (let i = 0; i <= clampedIndex; i++) chessGame.move(history[i]);
+
+		setCurrentMove(clampedIndex);
+		syncGameState(history);
 	};
 
 	// piece dropping logic
@@ -164,11 +199,27 @@ const useBoard = ({boardOrientation}: useBoardProps) => {
 		onSquareClick,
 		squareStyles: optionSquares,
 		boardStyle: {
-			borderRadius: 10
+			borderRadius: 10,
 		},
-		boardOrientation: boardOrientation, 
+		boardOrientation: boardOrientation,
 		id: "board",
 	};
-	return { options, chessPosition, setChessPosition, chessGameRef, chessPGN, lastMove };
+
+	// last move
+	const moves = chessGame.history();
+	const lastMove = moves[moves.length - 1];
+
+	return {
+		options,
+		chessPosition,
+		setChessPosition,
+		chessGameRef,
+		chessPGN,
+		setChessPGN,
+		history,
+		goToMove,
+		currentMove,
+		lastMove
+	};
 };
 export default useBoard;

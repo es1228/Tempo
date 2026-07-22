@@ -6,11 +6,12 @@ type ChessGameItemProps = {
     blackElo: number;
     date: string;
     result: string;
+    onClick: () => void;
 }
 
-const ChessGameItem = ({timeClass, white, whiteElo, black, blackElo, date, result}: ChessGameItemProps) => {
+const ChessGameItem = ({timeClass, white, whiteElo, black, blackElo, date, result, onClick}: ChessGameItemProps) => {
 	return (
-		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary flex flex-row items-center justify-between gap-4 rounded-3xl p-4 overflow-auto hover:cursor-pointer hover:opacity-80">
+		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary flex flex-row items-center justify-between gap-4 rounded-3xl p-4 overflow-auto hover:cursor-pointer hover:opacity-80" onClick={onClick}>
 			<div className="flex flex-row gap-4 items-center">
 				<p>{timeClass}</p>
 				<div>

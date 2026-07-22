@@ -1,7 +1,6 @@
 import { Chessboard } from "react-chessboard";
 import EvalBar from "../components/EvalBar";
 import Button from "../components/Button";
-import { undoMove } from "../utils/undoMove";
 import useBoard from "../hooks/useBoard";
 import useStockfish from "../hooks/useStockfish";
 import { useState } from "react";
@@ -9,17 +8,19 @@ import useClassify from "../hooks/useClassify";
 import { convertEvaluation } from "../utils/convertEvaluation";
 import ImportDialog from "../components/ImportDialog";
 
-const EvalPage = () => {
+const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
 	const {
 		options,
 		chessPosition,
-		setChessPosition,
-		chessGameRef,
 		chessPGN,
-		lastMove,
+		setChessPGN,
+		history,
+		goToMove,
+		currentMove,
+		lastMove
 	} = useBoard({
 		boardOrientation: isFlipped ? "black" : "white",
 	});
@@ -38,11 +39,18 @@ const EvalPage = () => {
 		isThinking,
 	);
 
+	const handleImport = (data: string) => {
+		if (!data) return;
+		setChessPGN(data);
+		setIsDialogOpen(false);
+	};
+
 	return (
 		<>
 			<ImportDialog
 				isDialogOpen={isDialogOpen}
 				closeDialog={() => setIsDialogOpen(false)}
+				handleImport={handleImport}
 			/>
 			<div className="mt-20 mr-4 mb-4 flex justify-end">
 				<Button
@@ -61,21 +69,22 @@ const EvalPage = () => {
 				</div>
 			</div>
 			<div className="flex justify-center">
-				<Button
-					icon="first_page"
-					onClick={() =>
-						setChessPosition(undoMove(chessGameRef.current, true))
-					}
-				/>
+				<Button icon="first_page" onClick={() => goToMove(-1)} />
 				<Button
 					icon="arrow_back"
-					onClick={() =>
-						setChessPosition(undoMove(chessGameRef.current, false))
-					}
+					onClick={() => goToMove(currentMove - 1)}
 				/>
 				<Button
 					icon="cached"
 					onClick={() => setIsFlipped(!isFlipped)}
+				/>
+				<Button
+					icon="arrow_forward"
+					onClick={() => goToMove(currentMove + 1)}
+				/>
+				<Button
+					icon="last_page"
+					onClick={() => goToMove(history.length - 1)}
 				/>
 			</div>
 			<div className="text-center">
@@ -89,4 +98,4 @@ const EvalPage = () => {
 		</>
 	);
 };
-export default EvalPage;
+export default ReviewPage;
