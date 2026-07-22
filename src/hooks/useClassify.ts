@@ -13,7 +13,6 @@ const useClassify = (
 	// variables
 	const [classification, setClassification] = useState("");
 	const [opening, setOpening] = useState("");
-	const [wasBest, setWasBest] = useState("");
 
 	useEffect(() => {
 		// prevent old data
@@ -36,7 +35,6 @@ const useClassify = (
 			if (opening) {
 				setClassification("theory");
 				setOpening(opening);
-				setWasBest("");
 				return;
 			}
 
@@ -51,7 +49,6 @@ const useClassify = (
 				chess.move(lastMove);
 				if (moves === 1) {
 					setClassification("forced");
-					setWasBest("");
 					return;
 				}
 			}
@@ -68,7 +65,6 @@ const useClassify = (
 			// compare with best move or end early if it is checkmate
 			if (movePlayed === bestMove || chess.isCheckmate()) {
 				setClassification("best");
-				setWasBest("");
 				return;
 			}
 
@@ -77,7 +73,6 @@ const useClassify = (
 			setClassification(
 				expectedPoints(evaluation1, evaluation2, colorTurn),
 			);
-			setWasBest(bestMove);
 			return;
 		};
 		runClassification();
@@ -88,6 +83,6 @@ const useClassify = (
 		};
 	}, [pgn, bestMove, evaluation1, evaluation2, isThinking]);
 	// return data
-	return { classification, opening, wasBest };
+	return { classification, opening };
 };
 export default useClassify;

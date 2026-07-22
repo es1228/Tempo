@@ -33,9 +33,9 @@ const ReviewPage = () => {
 		lines: 1,
 	});
 
-	const { classification, opening, wasBest } = useClassify(
+	const { classification, opening } = useClassify(
 		chessPGN,
-		bestMove,
+		bestMove.at(-1) ?? "",
 		convertEvaluation(evaluation[evaluation.length - 2]),
 		convertEvaluation(evaluation[evaluation.length - 1]),
 		isThinking,
@@ -91,7 +91,14 @@ const ReviewPage = () => {
 							lastMove &&
 							`${lastMove} is ${isThinking ? "Loading..." : classification}`
 						}`}
-						best={wasBest && `The Best Move was ${wasBest}`}
+						best={
+							bestMove.at(-2) &&
+							!isThinking &&
+							classification !== "best" &&
+							classification !== "theory"
+								? `The Best Move was ${bestMove.at(-2)}`
+								: ""
+						}
 						opening={`${opening && `${opening}`}`}
 					/>
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
