@@ -3,12 +3,19 @@ type ButtonProps = {
 	icon: string;
 	text?: string;
 	isPrimary?: boolean;
+	isSecondary?: boolean;
 };
 
-const Button = ({ text, icon, isPrimary, onClick }: ButtonProps) => {
+const Button = ({
+	text,
+	icon,
+	isPrimary,
+	isSecondary,
+	onClick,
+}: ButtonProps) => {
 	return (
 		<button
-			className={`group flex flex-row gap-2 rounded-3xl p-3 text-nowrap backdrop-blur hover:cursor-pointer ${isPrimary ? "bg-primary" : "bg-on-bg dark:bg-on-bg-dark"}`}
+			className={`group flex flex-row gap-2 rounded-3xl p-3 text-nowrap backdrop-blur hover:cursor-pointer ${isPrimary && "bg-primary"} ${isSecondary && "bg-on-bg-secondary dark:bg-on-bg-dark-secondary"}`}
 			onClick={onClick}
 		>
 			<span className="icon icon-rounded group-hover:icon-filled group-hover:icon-700 transition-all duration-100">

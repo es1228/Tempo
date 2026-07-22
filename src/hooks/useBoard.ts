@@ -207,7 +207,7 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 
 	// last move
 	const moves = chessGame.history();
-	const lastMove = moves[moves.length - 1];
+	const lastMove = moves[moves.length - 1] ?? "";
 
 	return {
 		options,
@@ -219,7 +219,7 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		history,
 		goToMove,
 		currentMove,
-		lastMove
+		lastMove,
 	};
 };
 export default useBoard;

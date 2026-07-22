@@ -15,7 +15,7 @@ const EvalBar = ({ evaluation, isFlipped }: EvalBarProps) => {
 	return (
 		<div
 			id="eval-container"
-			className="flex h-auto w-10 flex-col rounded bg-white border-black border"
+			className="flex h-auto my-18 w-10 flex-col rounded bg-white border-black border"
 			style={{rotate: `${isFlipped ? "180deg" : ""}`}}
 		>
 			<div
