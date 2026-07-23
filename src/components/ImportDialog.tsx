@@ -9,7 +9,7 @@ import useFetchChessCom from "../hooks/useFetchChessCom";
 import Button from "./Button";
 import ChessGameItem from "./ChessGameItem";
 import Dropdown from "./Dropdown";
-import Searchbar from "./SearchBar";
+import Searchbar from "./Searchbar";
 
 type ImportDialogProps = {
 	isDialogOpen: boolean;
@@ -71,6 +71,7 @@ const ImportDialog = ({
 					setTextValue("");
 				}}
 				values={values}
+				displayValues={values}
 			/>
 			<div>
 				<Searchbar

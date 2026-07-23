@@ -77,7 +77,7 @@ const ReviewPage = () => {
 						)}
 					</div>
 				</div>
-				<div className="bg-on-bg dark:bg-on-bg-dark mx-4 mb-40 flex flex-col justify-center gap-2 rounded-3xl p-2 lg:mt-40 lg:mr-40 lg:mb-0 lg:h-120 lg:w-fit lg:scale-125">
+				<div className="bg-on-bg dark:bg-on-bg-dark mx-4 mb-40 flex flex-col justify-center gap-2 rounded-3xl p-2 lg:mt-40 lg:mr-10 lg:mb-0 lg:h-120 lg:w-fit lg:scale-125">
 					<div className="flex flex-row items-center justify-between">
 						<h1 className="p-2 text-2xl">Game Review</h1>
 						<Button

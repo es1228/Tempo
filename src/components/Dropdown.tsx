@@ -4,12 +4,14 @@ type DropdownProps = {
 	selectedValue: string;
 	handleChange: (e: MouseEvent<HTMLLIElement>) => void;
 	values: string[];
+	displayValues: string[];
 };
 
 const Dropdown = ({
 	selectedValue,
 	handleChange,
 	values,
+	displayValues,
 }: DropdownProps) => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -17,7 +19,7 @@ const Dropdown = ({
 	const clickRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-        if (!isMenuOpen) return;
+		if (!isMenuOpen) return;
 
 		const handleOutsideClick = (e: Event) => {
 			if (
@@ -37,7 +39,7 @@ const Dropdown = ({
 				className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary flex w-full min-w-20 justify-between rounded-3xl p-4 outline-0 transition-opacity duration-300 ease-in-out hover:cursor-pointer hover:opacity-70"
 				onClick={() => setIsMenuOpen(!isMenuOpen)}
 			>
-				{values[values.indexOf(selectedValue)]}
+				{displayValues[values.indexOf(selectedValue)]}
 				<div
 					className={`block max-h-6 origin-center transition-transform duration-300 ${isMenuOpen ? "rotate-180" : "rotate-0"}`}
 				>
@@ -46,28 +48,28 @@ const Dropdown = ({
 					</span>
 				</div>
 			</button>
-				<ul
-					className={`bg-on-bg-secondary dark:bg-on-bg-dark-secondary absolute top-full left-1/2 z-1000000 mt-2 w-full -translate-x-1/2 rounded-3xl p-2 transition-all duration-300 ease-in-out ${isMenuOpen ? "pointer-events-auto visible scale-100 transform opacity-100" : "pointer-events-none invisible scale-95 transform opacity-0"} `}
-					onClick={() => setIsMenuOpen(false)}
-				>
-					{values.map((val) => (
-						<li
-							key={val}
-							className="flex gap-4 p-2 transition-opacity duration-300 ease-in-out hover:cursor-pointer hover:opacity-70"
-							data-value={val}
-							onClick={handleChange}
-						>
-							<div className="w-4">
-								{val === selectedValue && (
-									<span className="material-symbols-rounded">
-										check
-									</span>
-								)}
-							</div>
-							{val}
-						</li>
-					))}
-				</ul>
+			<ul
+				className={`bg-on-bg-secondary dark:bg-on-bg-dark-secondary absolute top-full left-1/2 z-1000000 mt-2 w-full -translate-x-1/2 rounded-3xl p-2 transition-all duration-300 ease-in-out ${isMenuOpen ? "pointer-events-auto visible scale-100 transform opacity-100" : "pointer-events-none invisible scale-95 transform opacity-0"} `}
+				onClick={() => setIsMenuOpen(false)}
+			>
+				{values.map((val) => (
+					<li
+						key={val}
+						className="flex gap-4 p-2 transition-opacity duration-300 ease-in-out hover:cursor-pointer hover:opacity-70"
+						data-value={val}
+						onClick={handleChange}
+					>
+						<div className="w-4">
+							{val === selectedValue && (
+								<span className="material-symbols-rounded">
+									check
+								</span>
+							)}
+						</div>
+						{displayValues[values.indexOf(val)]}
+					</li>
+				))}
+			</ul>
 		</div>
 	);
 };

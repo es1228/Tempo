@@ -20,6 +20,11 @@ const useTheme = () => {
 		root.classList.toggle("dark", isDark);
 		root.classList.toggle("light", !isDark);
 
+		if (theme === "system")
+			if (window.matchMedia("(prefers-color-scheme: dark)").matches)
+				root.classList.add("dark");
+			else root.classList.add("light");
+
 		localStorage.setItem("theme", theme);
 	}, [theme]);
 

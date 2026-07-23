@@ -1,26 +1,23 @@
 import Navbar from "./components/Navbar";
 import Header from "./components/Header";
 import useTheme from "./hooks/useTheme";
-import useFetchChessCom from "./hooks/useFetchChessCom";
 import ReviewPage from "./pages/ReviewPage";
+import { useState } from "react";
+import { type Pages } from "./types/Pages";
+import SettingsPage from "./pages/SettingsPage";
 
 const App = () => {
-
 	const { theme } = useTheme();
 	console.log(theme);
 
-	const {games} = useFetchChessCom({
-		playerID: "GothamChess",
-		month: 0,
-	}
-	);
-	console.log(games);
+	const [page, setPage] = useState<Pages>("Review");
 
 	return (
 		<>
 			<Header />
-			<Navbar onClick={() => {}} page="Review" />
-			<ReviewPage />
+			<Navbar onClick={(p: Pages) => setPage(p)} page={page} />
+			{page === "Review" && <ReviewPage />}
+			{page === "Settings" && <SettingsPage />}
 		</>
 	);
 };

@@ -1,12 +1,12 @@
 import type { ChangeEvent } from "react";
 
 type SearchbarProps = {
-    placeholder: string;
+	placeholder: string;
 	onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 	value: string;
-}
+};
 
-const Searchbar = ({placeholder, value, onChange}: SearchbarProps) => {
+const Searchbar = ({ placeholder, value, onChange }: SearchbarProps) => {
 	return (
 		<>
 			<div className="relative">
@@ -20,11 +20,11 @@ const Searchbar = ({placeholder, value, onChange}: SearchbarProps) => {
 					placeholder={placeholder}
 					onChange={onChange}
 					value={value}
-					className="group bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-3 pl-11 outline-0 min-w-full"
+					className="group bg-on-bg-secondary dark:bg-on-bg-dark-secondary text-text dark:text-text-dark min-w-full rounded-3xl p-3 pl-11 outline-0"
 					autoComplete="off"
 				/>
 			</div>
 		</>
 	);
-}
+};
 export default Searchbar;

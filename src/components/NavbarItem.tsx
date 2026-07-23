@@ -10,7 +10,7 @@ type NavbarItemProps = {
 const NavbarItem = ({ icon, text, onClick, page }: NavbarItemProps) => {
 	return (
 		<li
-			className="group hover:bg-primary/20 flex flex-col items-center gap-2 rounded-2xl p-4 transition-all duration-100 md:flex-row"
+			className="group hover:bg-primary/20 hover:cursor-pointer flex flex-col items-center gap-2 rounded-2xl p-4 transition-all duration-100 md:flex-row"
 			style={{backgroundColor: page === text ? "var(--color-primary)" : ""}}
 			onClick={() => onClick(text as Pages)}
 		>
