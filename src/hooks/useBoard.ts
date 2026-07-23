@@ -34,10 +34,14 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		// get history
 		const history = overrideHistory ?? chessGame.history({ verbose: true });
 		setHistory(history);
-		
+
 		// clear movefrom and optionsquares
 		setMoveFrom("");
 		setOptionSquares({});
+
+		// update current move
+		if (!overrideHistory)
+			setCurrentMove(history.length - 1);
 	};
 
 	// pgn import
