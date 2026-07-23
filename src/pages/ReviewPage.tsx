@@ -3,7 +3,7 @@ import EvalBar from "../components/EvalBar";
 import Button from "../components/Button";
 import useBoard from "../hooks/useBoard";
 import useStockfish from "../hooks/useStockfish";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useClassify from "../hooks/useClassify";
 import { convertEvaluation } from "../utils/convertEvaluation";
 import ImportDialog from "../components/ImportDialog";
@@ -14,6 +14,7 @@ import HistoryContainer from "../components/HistoryContainer";
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+	const [gameBestMoves, setGameBestMoves] = useState<Record<number, string>>([]);
 
 	const {
 		options,
@@ -34,11 +35,13 @@ const ReviewPage = () => {
 		lines: 1,
 	});
 
+	const prevBestMove = gameBestMoves[currentMove - 1];
+
 	const { classification, opening } = useClassify(
 		chessPGN,
-		bestMove.at(-1) ?? "",
-		convertEvaluation(evaluation[evaluation.length - 2]),
-		convertEvaluation(evaluation[evaluation.length - 1]),
+		prevBestMove,
+		convertEvaluation(evaluation.at(-2) ?? "0"),
+		convertEvaluation(evaluation.at(-1) ?? "0"),
 		isThinking,
 	);
 
@@ -47,6 +50,11 @@ const ReviewPage = () => {
 		setChessPGN(data);
 		setIsDialogOpen(false);
 	};
+
+	useEffect(() => {
+		if (!isThinking && bestMove)
+			setGameBestMoves((prev) => ({ ...prev, [currentMove]: bestMove }));
+	}, [isThinking, bestMove, currentMove]);
 
 	return (
 		<>
@@ -90,19 +98,19 @@ const ReviewPage = () => {
 					<MoveFeedbackContainer
 						feedback={`${
 							lastMove &&
-							`${lastMove} is ${isThinking ? "Loading..." : classification}`
+							`${lastMove} is ${isThinking ? "Loading" : classification}`
 						}`}
 						best={
-							bestMove.at(-2) &&
+							prevBestMove &&
 							!isThinking &&
 							classification !== "best" &&
 							classification !== "theory"
-								? `The Best Move was ${bestMove.at(-2)}`
+								? `The Best Move was ${prevBestMove}`
 								: ""
 						}
 						opening={`${opening && `${opening}`}`}
 					/>
-					<HistoryContainer history={history} goToMove={goToMove}/>
+					<HistoryContainer history={history} goToMove={goToMove} />
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
 							icon="first_page"

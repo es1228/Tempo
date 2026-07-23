@@ -11,7 +11,7 @@ type useStockfishProps = {
 
 const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 	// data
-	const [bestMove, setBestMove] = useState<string[]>([]);
+	const [bestMove, setBestMove] = useState<string>("");
 	const [evaluation, setEvaluation] = useState<string[]>([]);
 	const [isThinking, setIsThinking] = useState<boolean>(false);
 
@@ -40,7 +40,7 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 			if (event.data.includes("bestmove")) {
 				const uci = event.data.split(" ")[1];
 				const currentFen = fenRef.current;
-				setBestMove(prev => [...prev, uciToSan(currentFen, uci)]);
+				setBestMove(uciToSan(currentFen, uci));
 				setIsThinking(false);
 			}
 
