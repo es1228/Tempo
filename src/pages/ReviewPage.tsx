@@ -40,6 +40,7 @@ const ReviewPage = () => {
 	const { classification, opening } = useClassify(
 		chessPGN,
 		prevBestMove,
+		convertEvaluation(evaluation.at(-3) ?? "0"),
 		convertEvaluation(evaluation.at(-2) ?? "0"),
 		convertEvaluation(evaluation.at(-1) ?? "0"),
 		isThinking,

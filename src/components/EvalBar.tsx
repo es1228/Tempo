@@ -24,13 +24,13 @@ const EvalBar = ({ evaluation, isFlipped }: EvalBarProps) => {
 				style={{ height: `${100 - winProbability * 100}%` }}
 			>
 				{winProbability < 0.5 && (
-					<p className="py-2 text-center text-xs lg:text-sm text-white" style={{rotate: `${isFlipped ? "180deg" : ""}`}}>
+					<p className="p-2 text-center text-sm text-white" style={{rotate: `${isFlipped ? "180deg" : ""}`}}>
 						{evalFormatted}
 					</p>
 				)}
 			</div>
 			{winProbability >= 0.5 && (
-				<p className="mt-auto py-2 lext-xs lg:text-sm text-center text-black" style={{rotate: `${isFlipped ? "180deg" : ""}`}}>
+				<p className="mt-auto p-2 text-sm text-center text-black" style={{rotate: `${isFlipped ? "180deg" : ""}`}}>
 					{evalFormatted}
 				</p>
 			)}

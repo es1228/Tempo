@@ -6,8 +6,9 @@ import { useEffect, useState } from "react";
 const useClassify = (
 	pgn: string,
 	bestMove: string,
-	evaluation1: number,
+	evaluation3: number,
 	evaluation2: number,
+	evaluation1: number,
 	isThinking: boolean,
 ) => {
 	// variables
@@ -70,9 +71,14 @@ const useClassify = (
 
 			// other classifications using expected points model
 			const colorTurn = chess.turn();
-			setClassification(
-				expectedPoints(evaluation1, evaluation2, colorTurn),
-			);
+			const classification1 = expectedPoints(evaluation2, evaluation1, colorTurn);
+			const classification2 = expectedPoints(evaluation3, evaluation2, colorTurn === "b" ? "w" : "b");
+
+			// calculate miss
+			if (classification1 === "a blunder" && classification2 === "a blunder")
+				setClassification("a miss");
+			else setClassification(classification1);
+
 			return;
 		};
 		runClassification();
