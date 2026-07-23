@@ -102,7 +102,10 @@ const ImportDialog = ({
 				<>
 					<div className="flex flex-row items-center justify-between">
 						<Button
-							onClick={() => {}}
+							onClick={() => {
+								handleImport(games[0].pgn);
+								closeDialog();
+							}}
 							icon="search"
 							text="Latest"
 							isPrimary

@@ -6,6 +6,7 @@ import type {
 	SquareHandlerArgs,
 } from "react-chessboard";
 import type { BoardColors } from "../types/BoardColors";
+import { useBoardColors } from "../globalContext";
 
 type useBoardProps = {
 	boardOrientation: BoardColors;
@@ -25,6 +26,8 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		Record<string, CSSProperties>
 	>({});
 
+	const { boardTheme } = useBoardColors();
+
 	// sync the game state
 	const syncGameState = (overrideHistory?: Move[]) => {
 		// update position
@@ -40,8 +43,7 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		setOptionSquares({});
 
 		// update current move
-		if (!overrideHistory)
-			setCurrentMove(history.length - 1);
+		if (!overrideHistory) setCurrentMove(history.length - 1);
 	};
 
 	// pgn import
@@ -207,6 +209,8 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 			borderRadius: 10,
 		},
 		boardOrientation: boardOrientation,
+		darkSquareStyle: { backgroundColor: boardTheme.darkSquareColor },
+		lightSquareStyle: { backgroundColor: boardTheme.lightSquareColor },
 		id: "board",
 	};
 
