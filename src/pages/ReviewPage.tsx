@@ -32,7 +32,7 @@ const ReviewPage = () => {
 
 	const { bestMove, evaluation, pv, isThinking } = useStockfish({
 		fen: chessPosition,
-		depth: 18,
+		depth: 20,
 		lines: 2,
 	});
 

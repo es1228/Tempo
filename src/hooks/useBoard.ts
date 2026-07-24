@@ -12,6 +12,8 @@ type useBoardProps = {
 	boardOrientation: BoardColors;
 };
 
+const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 const useBoard = ({ boardOrientation }: useBoardProps) => {
 	// data
 	const chessGameRef = useRef(new Chess());
@@ -20,11 +22,11 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 	const [chessPGN, setChessPGNState] = useState(chessGame.pgn());
 	const [history, setHistory] = useState<Move[]>([]);
 	const [currentMove, setCurrentMove] = useState<number>(-1);
-
 	const [moveFrom, setMoveFrom] = useState("");
 	const [optionSquares, setOptionSquares] = useState<
 		Record<string, CSSProperties>
 	>({});
+	const initialFEN = useRef<string>(DEFAULT_FEN);
 
 	const { boardTheme } = useBoardColors();
 
@@ -52,12 +54,14 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 			const trimmed = pgn.trim();
 			// if the pgn is actually a fen
 			if (validateFen(trimmed).ok) {
+				initialFEN.current = trimmed;
 				chessGame.load(trimmed);
 				setCurrentMove(-1);
 				syncGameState();
 				return;
 			}
 
+			initialFEN.current = DEFAULT_FEN;
 			chessGame.loadPgn(trimmed);
 			const fullHistory = chessGame.history({ verbose: true });
 
@@ -76,9 +80,13 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		// restrict index
 		const clampedIndex = Math.max(-1, Math.min(index, history.length - 1));
 
-		// reset to start and go until move is found
-		chessGame.reset();
-		for (let i = 0; i <= clampedIndex; i++) chessGame.move(history[i]);
+		// reset to initial loading point and go until move is found
+		chessGame.load(initialFEN.current);
+
+		for (let i = 0; i <= clampedIndex; i++) {
+			const move = history[i];
+			chessGame.move(typeof move === "string" ? move : move.san);
+		}
 
 		setCurrentMove(clampedIndex);
 		syncGameState(history);
