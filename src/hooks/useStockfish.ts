@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { uciToSan } from "../utils/uciToSan";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
+import type { PV } from "../types/PV";
 
 // props
 type useStockfishProps = {
@@ -12,7 +13,8 @@ type useStockfishProps = {
 const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 	// data
 	const [bestMove, setBestMove] = useState<string>("");
-	const [evaluation, setEvaluation] = useState<string[]>([]);
+	const [evaluation, setEvaluation] = useState<string>("");
+	const [pv, setPV] = useState<PV[]>([]);
 	const [isThinking, setIsThinking] = useState<boolean>(false);
 
 	// store fen as ref
@@ -31,50 +33,65 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 		// instantiate
 		const stockfish = new Worker("/stockfish/stockfish-18-lite.js");
 		stockfishRef.current = stockfish;
+		setPV([]);
 
 		// listen for message
 		stockfish.onmessage = (event) => {
 			console.log(event.data);
-
 			// extract best move
 			if (event.data.includes("bestmove")) {
 				const uci = event.data.split(" ")[1];
 				const currentFen = fenRef.current;
-				setBestMove(uciToSan(currentFen, uci));
+				setBestMove(uciToSan(currentFen, uci)!);
 				setIsThinking(false);
 			}
 
 			// extract evaluation
 			if (event.data.includes("info") && event.data.includes("score")) {
-				// parse top line
 				if (
-					(event.data.includes("multipv") ||
-						event.data.includes("multipv 1")) &&
-					event.data.includes(` depth ${depth}`)
+					event.data.includes("multipv") &&
+					event.data.includes(`info depth ${depth}`)
 				) {
 					// extract score
 					const parts = event.data.split(" ");
 					const scoreIndex = parts.indexOf("score");
 					const scoreType = parts[scoreIndex + 1];
-					let score = parts[scoreIndex + 2];
 
-					// check active player
-					const activePlayer = checkActivePlayer(fenRef.current);
+					// multipv
+					const MultiPVIndex = Number(
+						parts[parts.indexOf("multipv") + 1],
+					);
 
-					// modify score formatting
-					if (activePlayer === "b") score *= -1;
+					const score = Number(parts[scoreIndex + 2]);
 
-					// check the score type
-					if (scoreType === "cp") {
-						setEvaluation((prevEval) => [
-							...prevEval,
-							`${score > 0 ? "+" : ""}${(score / 100).toFixed(1)}`,
-						]);
-					} else if (scoreType === "mate") {
-						setEvaluation((prevEval) => [
-							...prevEval,
-							`${score > 0 ? "+" : "-"}M${Math.abs(score)}`,
-						]);
+					// update pv
+					const moveStr = event.data.split(" pv ")[1];
+
+					!isNaN(MultiPVIndex) &&
+						setPV((prev) => {
+							const updated = [...prev];
+							updated[MultiPVIndex - 1] = {
+								moves: moveStr,
+								score: score,
+							};
+							return updated;
+						});
+
+					if (MultiPVIndex === 1) {
+						// check active player
+						const activePlayer = checkActivePlayer(fenRef.current);
+						const formattedScore = activePlayer === "b" ? -1 * score : score
+
+						// check the score type
+						if (scoreType === "cp") {
+							setEvaluation(
+								`${formattedScore > 0 ? "+" : ""}${(formattedScore / 100).toFixed(1)}`,
+							);
+						} else if (scoreType === "mate") {
+							setEvaluation(
+								`${formattedScore > 0 ? "+" : "-"}M${Math.abs(formattedScore)}`,
+							);
+						}
 					}
 				}
 				if (event.data.includes("mate 0")) {
@@ -85,7 +102,7 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 					const sign = activePlayer === "b" ? "+" : "-";
 
 					// set the evaluation to checkmate
-					setEvaluation((prevEval) => [...prevEval, `${sign}M0`]);
+					setEvaluation(`${sign}M0`);
 				}
 			}
 		};
@@ -106,10 +123,11 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 
 		// set thinking
 		setIsThinking(true);
+		setPV([]);
+		setBestMove("");
 
 		// stop old analysis
 		stockfish.postMessage("stop");
-		stockfish.postMessage("ucinewgame");
 
 		// send message to evaluate
 		stockfish.postMessage(`position fen ${fen}`);
@@ -121,9 +139,9 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 			stockfish.postMessage("stop");
 			setIsThinking(false);
 		};
-	}, [fen]);
+	}, [fen, depth, lines]);
 
 	// return the result
-	return { bestMove, evaluation, isThinking };
+	return { bestMove, evaluation, pv, isThinking };
 };
 export default useStockfish;

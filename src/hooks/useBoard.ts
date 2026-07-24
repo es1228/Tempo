@@ -206,6 +206,7 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		onSquareClick,
 		squareStyles: optionSquares,
 		boardStyle: {
+			overflow: "visible",
 			borderRadius: 10,
 		},
 		boardOrientation: boardOrientation,

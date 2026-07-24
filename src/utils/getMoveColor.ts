@@ -7,16 +7,16 @@ export const getMoveColor = (classification: string) => {
         return "text-orange-400"
     else if (classification.includes("inaccuracy"))
         return "text-yellow-300"
-    else if (classification.includes("good"))
+    else if (classification.includes("good") || classification.includes("forced"))
         return "text-lime-200"
     else if (classification.includes("excellent"))
         return "text-lime-300"
     else if (classification.includes("best"))
         return "text-green-500"
     else if (classification.includes("great"))
-        return "text-blue-800"
+        return "text-blue-400"
     else if (classification.includes("brilliant"))
-        return "text-blue-300"
+        return "text-cyan-400"
     else if (classification.includes("theory"))
         return "text-amber-800"
 }
