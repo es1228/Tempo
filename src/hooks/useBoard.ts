@@ -1,4 +1,10 @@
-import { Chess, Move, validateFen, type Square } from "chess.js";
+import {
+	Chess,
+	Move,
+	validateFen,
+	type PieceSymbol,
+	type Square,
+} from "chess.js";
 import { useRef, useState, type CSSProperties } from "react";
 import type {
 	ChessboardOptions,
@@ -26,9 +32,35 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 	const [optionSquares, setOptionSquares] = useState<
 		Record<string, CSSProperties>
 	>({});
+	const [promotionMove, setPromotionMove] = useState<{
+		from: Square;
+		to: Square;
+	} | null>(null);
 	const initialFEN = useRef<string>(DEFAULT_FEN);
+	const [whitePlayer, setWhitePlayer] = useState<string>("");
+	const [blackPlayer, setBlackPlayer] = useState<string>("");
+	const [whiteElo, setWhiteElo] = useState<string>("");
+	const [blackElo, setBlackElo] = useState<string>("");
 
 	const { boardTheme } = useBoardColors();
+
+	// detect promotion move
+	const isPromotionMove = (from: Square, to: Square) => {
+		const piece = chessGame.get(from);
+
+		if (!piece || piece.type !== "p") return false;
+
+		const targetRank = to[1];
+
+		if (
+			(piece.color === "w" && targetRank === "8") ||
+			(piece.color === "b" && targetRank === "1")
+		) {
+			const moves = chessGame.moves({ square: from, verbose: true });
+			return moves.some((move) => move.to === to);
+		}
+		return false;
+	};
 
 	// sync the game state
 	const syncGameState = (overrideHistory?: Move[]) => {
@@ -51,6 +83,13 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 	// pgn import
 	const setChessPGN = (pgn: string) => {
 		try {
+			// reset players
+			setWhitePlayer("");
+			setWhiteElo("");
+			setBlackPlayer("");
+			setBlackElo("");
+
+			// trim pgn
 			const trimmed = pgn.trim();
 			// if the pgn is actually a fen
 			if (validateFen(trimmed).ok) {
@@ -61,10 +100,21 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 				return;
 			}
 
+			// load the pgn
 			initialFEN.current = DEFAULT_FEN;
 			chessGame.loadPgn(trimmed);
 			const fullHistory = chessGame.history({ verbose: true });
 
+			// check for player headers
+			console.log(pgn);
+			const headers = chessGame.getHeaders();
+
+			setWhitePlayer(headers["White"] ?? "");
+			setWhiteElo(headers["WhiteElo"] ?? "");
+			setBlackPlayer(headers["Black"] ?? "");
+			setBlackElo(headers["BlackElo"] ?? "");
+
+			// sync
 			chessGame.reset();
 			setCurrentMove(-1);
 			syncGameState(fullHistory);
@@ -100,6 +150,15 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		// offscreen drop
 		if (!targetSquare) {
 			return false;
+		}
+
+		// promotion
+		const from = sourceSquare as Square;
+		const to = targetSquare as Square;
+
+		if (isPromotionMove(from, to)) {
+			setPromotionMove({ from, to });
+			return true;
 		}
 
 		// check if move is valid
@@ -188,6 +247,16 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 
 			return;
 		}
+
+		// promotion
+		const from = moveFrom as Square;
+		const to = square as Square;
+
+		if (isPromotionMove(from, to)) {
+			setPromotionMove({ from, to });
+			return true;
+		}
+
 		// check legal move
 		try {
 			chessGame.move({
@@ -204,6 +273,20 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 			return;
 		}
 
+		syncGameState();
+	};
+
+	// promotion piece select
+	const onPromotionPieceSelect = (piece: PieceSymbol) => {
+		try {
+			chessGame.move({
+				from: promotionMove!.from,
+				to: promotionMove!.to,
+				promotion: piece,
+			});
+			setChessPosition(chessGame.fen());
+		} catch {}
+		setPromotionMove(null);
 		syncGameState();
 	};
 
@@ -238,6 +321,12 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		goToMove,
 		currentMove,
 		lastMove,
+		whitePlayer,
+		blackPlayer,
+		whiteElo,
+		blackElo,
+		promotionMove,
+		onPromotionPieceSelect
 	};
 };
 export default useBoard;

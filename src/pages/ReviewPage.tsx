@@ -11,11 +11,15 @@ import PlayerContainer from "../components/PlayerContainer";
 import MoveFeedbackContainer from "../components/MoveFeedbackContainer";
 import HistoryContainer from "../components/HistoryContainer";
 import { type AnalysisCache } from "../types/AnalysisCache";
+import PromotionDialog from "../components/PromotionDialog";
+import type { PieceSymbol } from "chess.js";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-	const [gameCache, setGameCache] = useState<Record<number, AnalysisCache>>({})
+	const [gameCache, setGameCache] = useState<Record<number, AnalysisCache>>(
+		{},
+	);
 
 	const {
 		options,
@@ -26,32 +30,39 @@ const ReviewPage = () => {
 		goToMove,
 		currentMove,
 		lastMove,
+		whitePlayer,
+		blackPlayer,
+		whiteElo,
+		blackElo,
+		promotionMove,
+		onPromotionPieceSelect,
 	} = useBoard({
 		boardOrientation: isFlipped ? "black" : "white",
 	});
 
 	const { bestMove, evaluation, pv, isThinking } = useStockfish({
 		fen: chessPosition,
-		depth: 20,
+		depth: 15,
 		lines: 2,
 	});
 
 	useEffect(() => {
 		if (!isThinking && bestMove && evaluation) {
-			setGameCache(prev => ({
+			setGameCache((prev) => ({
 				...prev,
 				[currentMove]: {
 					bestMove,
-					evaluation, 
+					evaluation,
 					pv,
-				}
+				},
 			}));
 		}
-	}, [isThinking, bestMove, evaluation, pv, currentMove])
+	}, [isThinking, bestMove, evaluation, pv, currentMove]);
 
 	const prevAnalysis = gameCache[currentMove - 1];
 
-	const evalAtCurrent = gameCache[currentMove]?.evaluation ?? evaluation ?? "+0.0";
+	const evalAtCurrent =
+		gameCache[currentMove]?.evaluation ?? evaluation ?? "+0.0";
 	const evalAtPrev = gameCache[currentMove - 1]?.evaluation ?? "+0.0";
 	const evalAtPrev2 = gameCache[currentMove - 2]?.evaluation ?? "+0.0";
 
@@ -81,17 +92,20 @@ const ReviewPage = () => {
 			/>
 			<div className="flex flex-col lg:mr-5 lg:ml-60 lg:flex-row lg:justify-between">
 				<div className="mx-4 mt-22 flex justify-center gap-2">
-					<EvalBar
-						evaluation={evaluation}
-						isFlipped={isFlipped}
-					/>
+					<EvalBar evaluation={evaluation} isFlipped={isFlipped} />
 					<div className="flex flex-col justify-start">
 						{isFlipped ? (
-							<PlayerContainer text="White" />
+							<PlayerContainer
+								name={whitePlayer ? whitePlayer : "White"}
+								elo={whiteElo}
+							/>
 						) : (
-							<PlayerContainer text="Black" />
+							<PlayerContainer
+								name={blackPlayer ? blackPlayer : "Black"}
+								elo={blackElo}
+							/>
 						)}
-						<div className="w-auto md:w-120">
+						<div className="w-auto md:w-120 relative">
 							<Chessboard
 								options={{
 									...options,
@@ -107,27 +121,40 @@ const ReviewPage = () => {
 
 										return (
 											<div
-												className="relative h-full w-full overflow-visible z-100"
+												className="relative z-100 h-full w-full overflow-visible"
 												style={squareStyle}
 											>
 												{children}
-												{currentMove >= 0 && square === endSquare && (
-													<img
-														src={`/ChessIcons/${moveClass}.png`}
-														alt={classification}
-														className="pointer-events-none absolute -top-3 -right-3 z-100 h-6 w-6 md:-top-4 md:-right-4 md:h-8 md:w-8 overflow-visible"
-													/>
-												)}
+												{currentMove >= 0 &&
+													square === endSquare && (
+														<img
+															src={`/ChessIcons/${moveClass}.png`}
+															alt={classification}
+															className="pointer-events-none absolute -top-3 -right-3 z-100 h-6 w-6 overflow-visible md:-top-4 md:-right-4 md:h-8 md:w-8"
+														/>
+													)}
 											</div>
 										);
 									},
 								}}
 							/>
+							<PromotionDialog
+								isDialogOpen={!!promotionMove}
+								onSelect={(p: PieceSymbol) =>
+									onPromotionPieceSelect(p)
+								}
+							/>
 						</div>
 						{isFlipped ? (
-							<PlayerContainer text="Black" />
+							<PlayerContainer
+								name={blackPlayer ? blackPlayer : "Black"}
+								elo={blackElo}
+							/>
 						) : (
-							<PlayerContainer text="White" />
+							<PlayerContainer
+								name={whitePlayer ? whitePlayer : "White"}
+								elo={whiteElo}
+							/>
 						)}
 					</div>
 				</div>
@@ -150,6 +177,7 @@ const ReviewPage = () => {
 							prevAnalysis?.bestMove &&
 							!isThinking &&
 							classification !== "best" &&
+							classification !== "great" &&
 							classification !== "theory"
 								? `The Best Move was ${prevAnalysis?.bestMove}`
 								: ""

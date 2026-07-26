@@ -70,6 +70,8 @@ const useClassify = (
 				return;
 			}
 
+			if (!pv1 || !pv2) return;
+
 			// great moves
 			const isbetterMovePlayed = movePlayed && movePlayed === bestMove;
 
@@ -83,13 +85,13 @@ const useClassify = (
 			const isOnlyGoodMove = pvDiff > 150;
 			const isNotAlreadyWinning = pv2.score < 400;
 
+			// set as great if move qualifies and classify as miss if it was not played
 			if (
-				isbetterMovePlayed &&
 				isOnlyGoodMove &&
 				isNotAlreadyWinning &&
 				isDrawnOrWinning
 			) {
-				setClassification("great");
+				isbetterMovePlayed ? setClassification("great") : setClassification("a miss");
 				return;
 			}
 

@@ -80,7 +80,8 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 					if (MultiPVIndex === 1) {
 						// check active player
 						const activePlayer = checkActivePlayer(fenRef.current);
-						const formattedScore = activePlayer === "b" ? -1 * score : score
+						const formattedScore =
+							activePlayer === "b" ? -1 * score : score;
 
 						// check the score type
 						if (scoreType === "cp") {
@@ -110,6 +111,9 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 		// send message to evaluate
 		stockfish.postMessage("uci");
 		stockfish.postMessage("isready");
+		stockfish.postMessage("setoption name Hash value 128");
+		const cores = navigator.hardwareConcurrency || 4;
+		stockfish.postMessage(`setoption name Threads value ${cores}`);
 
 		// cleanup
 		return () => stockfish?.terminate();
