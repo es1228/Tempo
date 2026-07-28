@@ -11,6 +11,9 @@ import PlayerContainer from "../components/PlayerContainer";
 import MoveFeedbackContainer from "../components/MoveFeedbackContainer";
 import HistoryContainer from "../components/HistoryContainer";
 import { type AnalysisCache } from "../types/AnalysisCache";
+import PromotionDialog from "../components/PromotionDialog";
+import type { PieceSymbol, Square } from "chess.js";
+import { checkActivePlayer } from "../utils/checkActivePlayer";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -26,6 +29,8 @@ const ReviewPage = () => {
 		goToMove,
 		currentMove,
 		lastMove,
+		promotionMove,
+		onPromotionPieceSelect
 	} = useBoard({
 		boardOrientation: isFlipped ? "black" : "white",
 	});
@@ -103,7 +108,7 @@ const ReviewPage = () => {
 											options.squareStyles?.[square] ??
 											{};
 										const endSquare =
-											history.at(currentMove)?.to;
+											history?.at(currentMove)?.to;
 
 										return (
 											<div
@@ -123,6 +128,7 @@ const ReviewPage = () => {
 									},
 								}}
 							/>
+							<PromotionDialog isDialogOpen={!!promotionMove} onSelect={(p: PieceSymbol) => onPromotionPieceSelect(p)} square={promotionMove?.to as Square} moveColor={checkActivePlayer(chessPosition)}/>
 						</div>
 						{isFlipped ? (
 							<PlayerContainer text="Black" />

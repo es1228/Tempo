@@ -70,33 +70,36 @@ const useClassify = (
 				return;
 			}
 
-			// great moves
-			const isbetterMovePlayed = movePlayed && movePlayed === bestMove;
+			if (pv1.score && pv2.score) {
+				// great moves
+				const isbetterMovePlayed =
+					movePlayed && movePlayed === bestMove;
 
-			// check if the move is not losing
-			const isDrawnOrWinning = pv1.score > -500;
+				// check if the move is not losing
+				const isDrawnOrWinning = pv1.score > -500;
 
-			// calculate difference between top 2 moves
-			const pvDiff = pv1.score - pv2.score;
+				// calculate difference between top 2 moves
+				const pvDiff = pv1.score - pv2.score;
 
-			// only good move + not already winning
-			const isOnlyGoodMove = pvDiff > 150;
-			const isNotAlreadyWinning = pv2.score < 400;
+				// only good move + not already winning
+				const isOnlyGoodMove = pvDiff > 150;
+				const isNotAlreadyWinning = pv2.score < 400;
 
-			if (
-				isbetterMovePlayed &&
-				isOnlyGoodMove &&
-				isNotAlreadyWinning &&
-				isDrawnOrWinning
-			) {
-				setClassification("great");
-				return;
-			}
+				if (
+					isbetterMovePlayed &&
+					isOnlyGoodMove &&
+					isNotAlreadyWinning &&
+					isDrawnOrWinning
+				) {
+					setClassification("great");
+					return;
+				}
 
-			// best moves
-			if (movePlayed === bestMove) {
-				setClassification("best");
-				return;
+				// best moves
+				if (movePlayed === bestMove) {
+					setClassification("best");
+					return;
+				}
 			}
 
 			// other classifications using expected points model
