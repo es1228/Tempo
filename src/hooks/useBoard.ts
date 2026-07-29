@@ -102,7 +102,6 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 			// load the pgn
 			initialFEN.current = DEFAULT_FEN;
 			chessGame.loadPgn(trimmed);
-			const fullHistory = chessGame.history({ verbose: true });
 
 			// check for player headers
 			console.log(pgn);
@@ -116,7 +115,7 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 			// sync
 			chessGame.reset();
 			setCurrentMove(-1);
-			syncGameState(fullHistory);
+			syncGameState();
 		} catch {
 			console.error("Unable to load pgn");
 		}
@@ -125,6 +124,9 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 	// go to move
 	const goToMove = (index: number) => {
 		if (!history || history.length === 0) return;
+
+		// hide promotion dialog
+		if (!!promotionMove) setPromotionMove(null);
 
 		// restrict index
 		const clampedIndex = Math.max(-1, Math.min(index, history.length - 1));

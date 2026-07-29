@@ -16,6 +16,12 @@ const Navbar = ({ onClick, page }: NavbarProps) => {
 					onClick={onClick}
 					page={page}
 				/>
+				<NavbarItem
+					icon="play_arrow"
+					text="Play"
+					onClick={onClick}
+					page={page}
+				/>
 				<div className="lg:mt-auto">
 					<NavbarItem
 						icon="settings"

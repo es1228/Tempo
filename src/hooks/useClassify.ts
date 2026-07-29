@@ -70,7 +70,7 @@ const useClassify = (
 				return;
 			}
 
-			if (pv1.score && pv2.score) {
+			if (pv1 && pv2) {
 				// great moves
 				const isbetterMovePlayed =
 					movePlayed && movePlayed === bestMove;
@@ -94,12 +94,12 @@ const useClassify = (
 					setClassification("great");
 					return;
 				}
+			}
 
-				// best moves
-				if (movePlayed === bestMove) {
-					setClassification("best");
-					return;
-				}
+			// best moves
+			if (movePlayed === bestMove) {
+				setClassification("best");
+				return;
 			}
 
 			// other classifications using expected points model

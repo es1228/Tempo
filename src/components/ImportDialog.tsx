@@ -54,7 +54,7 @@ const ImportDialog = ({
 
 	return (
 		<div
-			className={`bg-on-bg dark:bg-on-bg-dark fixed top-1/2 left-1/2 z-1000000 h-screen w-screen -translate-x-1/2 -translate-y-1/2 space-y-4 overflow-auto p-8 transition-all duration-300 ease-in-out lg:h-2/3 lg:w-1/2 lg:rounded-3xl ${isDialogOpen ? "pointer-events-auto visible scale-100 transform opacity-100" : "pointer-events-none invisible scale-95 transform opacity-0"} `}
+			className={`bg-on-bg dark:bg-on-bg-dark fixed top-1/2 left-1/2 z-10000 h-screen w-screen -translate-x-1/2 -translate-y-1/2 space-y-4 mt-20 lg:mt-0 overflow-auto p-8 transition-all duration-300 ease-in-out lg:h-2/3 lg:w-1/2 lg:rounded-3xl ${isDialogOpen ? "pointer-events-auto visible scale-100 transform opacity-100" : "pointer-events-none invisible scale-95 transform opacity-0"} `}
 			ref={clickRef}
 		>
 			<div className="flex flex-row items-center justify-between">
@@ -100,7 +100,7 @@ const ImportDialog = ({
 			</div>
 			{selectedValue === "Chess.com" && (
 				<>
-					<div className="flex flex-row items-center justify-between">
+					<div className="flex flex-row items-center justify-between ">
 						<Button
 							onClick={() => {
 								handleImport(games[0].pgn);
@@ -134,7 +134,7 @@ const ImportDialog = ({
 							/>
 						</div>
 					</div>
-					<ul className="space-y-4">
+					<ul className="space-y-4 mb-50 lg:mb-0">
 						{games.map((game) => (
 							<ChessGameItem
 								key={game.url}

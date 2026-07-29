@@ -1,1 +1,1 @@
-export type Pages = "Review" | "Settings"
+export type Pages = "Review" | "Settings" | "Play"
