@@ -39,7 +39,7 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 		stockfish.onmessage = (event) => {
 			console.log(event.data);
 			// extract best move
-			if (event.data.includes("bestmove")) {
+			if (event.data.startsWith("bestmove")) {
 				const uci = event.data.split(" ")[1];
 				const currentFen = fenRef.current;
 				setBestMove(uciToSan(currentFen, uci)!);
@@ -137,7 +137,6 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 		// cleanup
 		return () => {
 			stockfish.postMessage("stop");
-			setIsThinking(false);
 		};
 	}, [fen, depth, lines]);
 

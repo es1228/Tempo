@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import type { BoardColorContextType, BoardTheme } from "./types/BoardTheme";
+import type { GlobalContextType } from "./types/GlobalContextType";
+import type { BoardTheme } from "./types/BoardTheme";
 
-export const GlobalContext = createContext<BoardColorContextType | null>(null);
+export const GlobalContext = createContext<GlobalContextType | null>(null);
 
 const GlobalProvider = ({ children }: {children: ReactNode}) => {
 	const [boardTheme, setBoardTheme] = useState<BoardTheme>(
@@ -10,9 +11,10 @@ const GlobalProvider = ({ children }: {children: ReactNode}) => {
             darkSquareColor: "#b58863"
         }
     );
+    const [customFen, setCustomFen] = useState<string | null>(null);
 
 	return (
-		<GlobalContext.Provider value={{ boardTheme, setBoardTheme }}>
+		<GlobalContext.Provider value={{ boardTheme, setBoardTheme, customFen, setCustomFen }}>
 			{children}
 		</GlobalContext.Provider>
 	);
@@ -23,6 +25,14 @@ export const useBoardColors = () => {
     const context = useContext(GlobalContext);
     if (!context) {
         throw new Error("Board colors hook failed");
+    }
+    return context;
+}
+
+export const useCustomFen = () => {
+    const context = useContext(GlobalContext);
+    if (!context) {
+        throw new Error("Custom fen hook failed");
     }
     return context;
 }

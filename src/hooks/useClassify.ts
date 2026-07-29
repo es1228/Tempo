@@ -34,7 +34,7 @@ const useClassify = (
 
 			if (!isActive || chess.history().length === 0) return;
 
-			// classify as theory if the pgn matches an openings database
+			// classify as theory if the fen matches an openings database
 			const opening = await checkOpenings(chess.fen());
 			if (opening) {
 				setClassification("theory");

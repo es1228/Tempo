@@ -10,6 +10,7 @@ import useChessTimer from "../hooks/useChessTimer";
 import TimeContainer from "../components/TimeContainer";
 import GameResult from "../components/GameResult";
 import getGameResult from "../utils/getGameResult";
+import { useCustomFen } from "../globalContext";
 
 const GamePage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -19,6 +20,9 @@ const GamePage = () => {
 	const [initialTime, setInitialTime] = useState<number>();
 	const [bonusTime, setBonusTime] = useState<number>();
 	const [autoRotate, setAutoRotate] = useState<boolean>(true);
+	const [useCustomPosition, setUseCustomPosition] = useState<boolean>(true);
+
+	const { customFen } = useCustomFen();
 
 	const startGame = (
 		inputWhiteText: string,
@@ -26,6 +30,7 @@ const GamePage = () => {
 		inputTime: number | undefined,
 		inputBonusTime: number | undefined,
 		inputAutoRotate: boolean,
+		inputCustomPos: boolean,
 	) => {
 		setWhiteText(inputWhiteText.trim() || "White");
 		setBlackText(inputBlackText.trim() || "Black");
@@ -33,6 +38,8 @@ const GamePage = () => {
 		isNaN(inputTime ?? 0) && setInitialTime(Infinity);
 		setBonusTime(Math.abs(inputBonusTime ?? 0));
 		setAutoRotate(inputAutoRotate);
+		setUseCustomPosition(inputCustomPos);
+		resetBoard(inputCustomPos);
 		setIsDialogOpen(false);
 	};
 
@@ -63,7 +70,7 @@ const GamePage = () => {
 		initialTime ?? Infinity,
 		bonusTime ?? 0,
 		checkActivePlayer(chessPosition),
-		!isDialogOpen
+		!isDialogOpen,
 	);
 
 	useEffect(() => {
@@ -71,8 +78,10 @@ const GamePage = () => {
 		handleMoveMade(prevPlayer);
 	}, [chessPosition]);
 
-	const resetBoard = () => {
-		chessGameRef.current.reset();
+	const resetBoard = (useCustomPos: boolean) => {
+		if (useCustomPos && customFen) chessGameRef.current.load(customFen);
+		else chessGameRef.current.reset();
+
 		setChessPosition(chessGameRef.current.fen());
 	};
 
@@ -123,21 +132,22 @@ const GamePage = () => {
 						/>
 						{gameResult && (
 							<GameResult
-								result={gameResult}
+								result={gameResult ?? ""}
 								handleRematch={() => {
 									resetClocks();
-									resetBoard();
+									resetBoard(useCustomPosition);
 									startGame(
 										whiteText,
 										blackText,
 										initialTime,
 										bonusTime,
 										autoRotate,
+										useCustomPosition,
 									);
 								}}
 								handleNewGame={() => {
 									resetClocks();
-									resetBoard();
+									resetBoard(useCustomPosition);
 									setIsDialogOpen(true);
 								}}
 								handleCopy={() =>
@@ -145,6 +155,7 @@ const GamePage = () => {
 										chessGameRef.current.pgn(),
 									)
 								}
+								isDialogOpen={!!gameResult}
 							/>
 						)}
 					</div>

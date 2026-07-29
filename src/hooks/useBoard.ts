@@ -16,11 +16,13 @@ import { useBoardColors } from "../globalContext";
 
 type useBoardProps = {
 	boardOrientation: BoardColors;
+	whiteTime?: number;
+	blackTime?: number;
 };
 
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-const useBoard = ({ boardOrientation }: useBoardProps) => {
+const useBoard = ({ boardOrientation, whiteTime, blackTime }: useBoardProps) => {
 	// data
 	const chessGameRef = useRef(new Chess());
 	const chessGame = chessGameRef.current;
@@ -148,8 +150,7 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 		sourceSquare,
 		targetSquare,
 	}: PieceDropHandlerArgs) => {
-		// offscreen drop
-		if (!targetSquare) {
+		if (!targetSquare || whiteTime === 0 || blackTime === 0) {
 			return false;
 		}
 
@@ -218,6 +219,8 @@ const useBoard = ({ boardOrientation }: useBoardProps) => {
 
 	// square click
 	const onSquareClick = ({ square, piece }: SquareHandlerArgs) => {
+		if (whiteTime === 0 || blackTime === 0) return;
+		
 		// piece clicked
 		if (!moveFrom && piece) {
 			// get move options

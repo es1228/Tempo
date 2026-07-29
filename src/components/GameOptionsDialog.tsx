@@ -9,6 +9,7 @@ type GameOptionsDialogProps = {
 		time: number | undefined,
 		bonusTime: number | undefined,
 		autoRotate: boolean,
+		useCustomPosition: boolean,
 	) => void;
 };
 
@@ -21,12 +22,13 @@ const GameOptionsDialog = ({
 	const [time, setTime] = useState<number>();
 	const [bonusTime, setBonusTime] = useState<number>();
 	const [autoRotate, setAutoRotate] = useState<boolean>(true);
+	const [useCustomPosition, setUseCustomPosition] = useState<boolean>(true);
 
 	if (!isDialogOpen) return null;
 
 	return (
-		<div className="bg-on-bg dark:bg-on-bg-dark fixed top-1/2 left-1/2 z-10000 h-screen w-screen -translate-x-1/2 -translate-y-1/2 rounded-3xl p-4 lg:h-1/2 lg:w-1/2">
-			<div className="mt-20 space-y-4 lg:mt-0">
+		<div className="bg-on-bg dark:bg-on-bg-dark fixed top-1/2 left-1/2 z-10000 h-screen w-screen -translate-x-1/2 -translate-y-1/2 rounded-3xl p-4 lg:h-3/5 lg:w-1/2">
+			<div className="mt-20 space-y-6 lg:mt-0">
 				<h1 className="text-3xl">Game Options</h1>
 				<div className="flex flex-row items-center gap-4">
 					<p>White: </p>
@@ -74,6 +76,15 @@ const GameOptionsDialog = ({
 					/>
 					<p>Rotate</p>
 				</div>
+				<div className="flex flex-row items-center gap-4">
+					<input
+						type="checkbox"
+						className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-full"
+						onChange={(e) => setUseCustomPosition(e.target.checked)}
+						checked={useCustomPosition}
+					/>
+					<p>Use Custom Position</p>
+				</div>
 				<Button
 					text="Start"
 					isPrimary
@@ -84,6 +95,7 @@ const GameOptionsDialog = ({
 							time,
 							bonusTime,
 							autoRotate,
+							useCustomPosition
 						)
 					}
 				/>
