@@ -8,9 +8,10 @@ type useStockfishProps = {
 	fen: string;
 	depth: number;
 	lines: number;
+	skill?: number;
 };
 
-const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
+const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 	// data
 	const [bestMove, setBestMove] = useState<string>("");
 	const [evaluation, setEvaluation] = useState<string>("");
@@ -132,6 +133,7 @@ const useStockfish = ({ fen, depth, lines }: useStockfishProps) => {
 		// send message to evaluate
 		stockfish.postMessage(`position fen ${fen}`);
 		stockfish.postMessage(`setoption name MultiPV value ${lines}`);
+		stockfish.postMessage(`setoption name Skill Level value ${skill}`);
 		stockfish.postMessage(`go depth ${depth}`);
 
 		// cleanup

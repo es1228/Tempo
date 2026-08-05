@@ -2,10 +2,11 @@ import {
 	Chess,
 	Move,
 	validateFen,
+	type Color,
 	type PieceSymbol,
 	type Square,
 } from "chess.js";
-import { useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type {
 	ChessboardOptions,
 	PieceDropHandlerArgs,
@@ -13,16 +14,28 @@ import type {
 } from "react-chessboard";
 import type { BoardColors } from "../types/BoardColors";
 import { useBoardColors } from "../globalContext";
+import useStockfish from "./useStockfish";
+import { checkActivePlayer } from "../utils/checkActivePlayer";
 
 type useBoardProps = {
 	boardOrientation: BoardColors;
 	whiteTime?: number;
 	blackTime?: number;
+	isPlayingAgainstEngine?: boolean;
+	playerColor?: Color;
+	engineStrength?: number;
 };
 
 const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-const useBoard = ({ boardOrientation, whiteTime, blackTime }: useBoardProps) => {
+const useBoard = ({
+	boardOrientation,
+	whiteTime,
+	blackTime,
+	isPlayingAgainstEngine,
+	playerColor,
+	engineStrength,
+}: useBoardProps) => {
 	// data
 	const chessGameRef = useRef(new Chess());
 	const chessGame = chessGameRef.current;
@@ -45,6 +58,13 @@ const useBoard = ({ boardOrientation, whiteTime, blackTime }: useBoardProps) => 
 	const [blackElo, setBlackElo] = useState<string>("");
 
 	const { boardTheme } = useBoardColors();
+
+	const { bestMove } = useStockfish({
+		fen: chessGame.fen(),
+		depth: 20,
+		lines: 1,
+		skill: engineStrength,
+	});
 
 	// detect promotion move
 	const isPromotionMove = (from: Square, to: Square) => {
@@ -73,7 +93,7 @@ const useBoard = ({ boardOrientation, whiteTime, blackTime }: useBoardProps) => 
 		// update history
 		if (overrideHistory) {
 			setHistory(overrideHistory);
-			setCurrentMove(overrideHistory.length - 1)
+			setCurrentMove(overrideHistory.length - 1);
 		}
 
 		// clear movefrom and optionsquares
@@ -150,7 +170,12 @@ const useBoard = ({ boardOrientation, whiteTime, blackTime }: useBoardProps) => 
 		sourceSquare,
 		targetSquare,
 	}: PieceDropHandlerArgs) => {
-		if (!targetSquare || whiteTime === 0 || blackTime === 0) {
+		if (
+			!targetSquare ||
+			whiteTime === 0 ||
+			blackTime === 0 ||
+			(isPlayingAgainstEngine && chessGame.turn() !== playerColor)
+		) {
 			return false;
 		}
 
@@ -219,8 +244,13 @@ const useBoard = ({ boardOrientation, whiteTime, blackTime }: useBoardProps) => 
 
 	// square click
 	const onSquareClick = ({ square, piece }: SquareHandlerArgs) => {
-		if (whiteTime === 0 || blackTime === 0) return;
-		
+		if (
+			whiteTime === 0 ||
+			blackTime === 0 ||
+			(isPlayingAgainstEngine && chessGame.turn() !== playerColor)
+		)
+			return;
+
 		// piece clicked
 		if (!moveFrom && piece) {
 			// get move options
@@ -293,6 +323,28 @@ const useBoard = ({ boardOrientation, whiteTime, blackTime }: useBoardProps) => 
 		setPromotionMove(null);
 		syncGameState(chessGame.history({ verbose: true }));
 	};
+
+	// engine moves
+	useEffect(() => {
+		const engineMove = () => {
+			if (!isPlayingAgainstEngine) return;
+
+			const isEngineTurn =
+				checkActivePlayer(chessGame.fen()) !== playerColor;
+
+			if (isEngineTurn && bestMove && !chessGame.isGameOver()) {
+				const timer = setTimeout(() => {
+					try {
+						chessGame.move(bestMove);
+						setChessPosition(chessGame.fen());
+					} catch {}
+					syncGameState(chessGame.history({ verbose: true }));
+				}, 300);
+				return () => clearTimeout(timer);
+			}
+		};
+		engineMove();
+	}, [bestMove, isPlayingAgainstEngine, playerColor, chessPosition]);
 
 	// board options
 	const options: ChessboardOptions = {

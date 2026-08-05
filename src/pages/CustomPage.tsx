@@ -139,6 +139,7 @@ const CustomPage = () => {
 								isPrimary
 								isOnTop
 							/>
+							<Button icon="content_copy" onClick={() => navigator.clipboard.writeText(chessGame.fen())}/>
 						</div>
 					</ChessboardProvider>
 				</div>

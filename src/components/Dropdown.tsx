@@ -15,7 +15,7 @@ const Dropdown = ({
 	values,
 	displayValues,
 	isPrimary,
-	isOnTop
+	isOnTop,
 }: DropdownProps) => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -40,7 +40,7 @@ const Dropdown = ({
 	return (
 		<div className="relative" ref={clickRef}>
 			<button
-				className={`${isPrimary ? "bg-on-bg dark:bg-on-bg-dark" : "bg-on-bg-secondary dark:bg-on-bg-dark-secondary"} flex w-full min-w-20 justify-between rounded-3xl p-4 outline-0 transition-opacity duration-300 ease-in-out hover:cursor-pointer hover:opacity-70`}
+				className={`${isPrimary ? "bg-on-bg dark:bg-on-bg-dark" : "bg-on-bg-secondary dark:bg-on-bg-dark-secondary"} z-50 flex w-full min-w-20 justify-between rounded-3xl p-4 outline-0 transition-opacity duration-300 ease-in-out hover:cursor-pointer hover:opacity-70`}
 				onClick={() => setIsMenuOpen(!isMenuOpen)}
 			>
 				{displayValues[values.indexOf(selectedValue)]}
@@ -53,7 +53,7 @@ const Dropdown = ({
 				</div>
 			</button>
 			<ul
-				className={`${isPrimary ? "bg-on-bg dark:bg-on-bg-dark" : "bg-on-bg-secondary dark:bg-on-bg-dark-secondary"} absolute ${isOnTop ? "bottom-full" : "top-full"} left-1/2 z-1000000 my-2 w-full -translate-x-1/2 rounded-3xl p-2 transition-all duration-300 ease-in-out ${isMenuOpen ? "pointer-events-auto visible scale-100 transform opacity-100" : "pointer-events-none invisible scale-95 transform opacity-0"} `}
+				className={`${isPrimary ? "bg-on-bg dark:bg-on-bg-dark" : "bg-on-bg-secondary dark:bg-on-bg-dark-secondary"} absolute ${isOnTop ? "bottom-full" : "top-full"} left-1/2 z-50 my-2 w-full -translate-x-1/2 rounded-3xl p-2 transition-all duration-300 ease-in-out ${isMenuOpen ? "pointer-events-auto visible scale-100 transform opacity-100" : "pointer-events-none invisible scale-95 transform opacity-0"} `}
 				onClick={() => setIsMenuOpen(false)}
 			>
 				{values.map((val) => (

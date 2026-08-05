@@ -2,7 +2,7 @@ import { Chessboard } from "react-chessboard";
 import useBoard from "../hooks/useBoard";
 import PromotionDialog from "../components/PromotionDialog";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
-import type { PieceSymbol, Square } from "chess.js";
+import type { Color, PieceSymbol, Square } from "chess.js";
 import PlayerContainer from "../components/PlayerContainer";
 import { useEffect, useState } from "react";
 import GameOptionsDialog from "../components/GameOptionsDialog";
@@ -11,6 +11,7 @@ import TimeContainer from "../components/TimeContainer";
 import GameResult from "../components/GameResult";
 import getGameResult from "../utils/getGameResult";
 import { useCustomFen } from "../globalContext";
+import Button from "../components/Button";
 
 const GamePage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -19,8 +20,13 @@ const GamePage = () => {
 	const [blackText, setBlackText] = useState<string>("");
 	const [initialTime, setInitialTime] = useState<number>();
 	const [bonusTime, setBonusTime] = useState<number>();
-	const [autoRotate, setAutoRotate] = useState<boolean>(true);
-	const [useCustomPosition, setUseCustomPosition] = useState<boolean>(true);
+	const [autoRotate, setAutoRotate] = useState<boolean>(false);
+	const [isUsingCustomPosition, setIsUsingCustomPosition] =
+		useState<boolean>(false);
+	const [isPlayingAgainstEngine, setIsPlayingAgainstEngine] =
+		useState<boolean>(false);
+	const [playerColor, setPlayerColor] = useState<Color>("w");
+	const [engineStrength, setEngineStrength] = useState<number>(20);
 
 	const { customFen } = useCustomFen();
 
@@ -31,6 +37,9 @@ const GamePage = () => {
 		inputBonusTime: number | undefined,
 		inputAutoRotate: boolean,
 		inputCustomPos: boolean,
+		inputPlayingEngine: boolean,
+		inputPlayerColor: Color,
+		inputEngineStrength: number,
 	) => {
 		setWhiteText(inputWhiteText.trim() || "White");
 		setBlackText(inputBlackText.trim() || "Black");
@@ -38,7 +47,10 @@ const GamePage = () => {
 		isNaN(inputTime ?? 0) && setInitialTime(Infinity);
 		setBonusTime(Math.abs(inputBonusTime ?? 0));
 		setAutoRotate(inputAutoRotate);
-		setUseCustomPosition(inputCustomPos);
+		setIsUsingCustomPosition(inputCustomPos);
+		setIsPlayingAgainstEngine(inputPlayingEngine);
+		setPlayerColor(inputPlayerColor);
+		setEngineStrength(inputEngineStrength);
 		resetBoard(inputCustomPos);
 		setIsDialogOpen(false);
 	};
@@ -52,6 +64,9 @@ const GamePage = () => {
 		onPromotionPieceSelect,
 	} = useBoard({
 		boardOrientation: isFlipped ? "black" : "white",
+		isPlayingAgainstEngine: isPlayingAgainstEngine,
+		playerColor: playerColor,
+		engineStrength: engineStrength,
 	});
 
 	useEffect(() => {
@@ -78,8 +93,8 @@ const GamePage = () => {
 		handleMoveMade(prevPlayer);
 	}, [chessPosition]);
 
-	const resetBoard = (useCustomPos: boolean) => {
-		if (useCustomPos && customFen) chessGameRef.current.load(customFen);
+	const resetBoard = (isCustomPos: boolean) => {
+		if (isCustomPos && customFen) chessGameRef.current.load(customFen);
 		else chessGameRef.current.reset();
 
 		setChessPosition(chessGameRef.current.fen());
@@ -120,6 +135,12 @@ const GamePage = () => {
 							)}
 						</div>
 					)}
+					<div className="fixed right-10 bg-on-bg dark:bg-on-bg-dark rounded-full">
+						<Button
+							icon="cached"
+							onClick={() => setIsFlipped(!isFlipped)}
+						/>
+					</div>
 					<div className="relative w-auto md:w-120">
 						<Chessboard options={options} />
 						<PromotionDialog
@@ -135,19 +156,22 @@ const GamePage = () => {
 								result={gameResult ?? ""}
 								handleRematch={() => {
 									resetClocks();
-									resetBoard(useCustomPosition);
+									resetBoard(isUsingCustomPosition);
 									startGame(
 										whiteText,
 										blackText,
 										initialTime,
 										bonusTime,
 										autoRotate,
-										useCustomPosition,
+										isUsingCustomPosition,
+										isPlayingAgainstEngine,
+										playerColor,
+										engineStrength,
 									);
 								}}
 								handleNewGame={() => {
 									resetClocks();
-									resetBoard(useCustomPosition);
+									resetBoard(isUsingCustomPosition);
 									setIsDialogOpen(true);
 								}}
 								handleCopy={() =>
