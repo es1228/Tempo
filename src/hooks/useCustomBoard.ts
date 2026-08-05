@@ -9,6 +9,9 @@ import { useBoardColors } from "../globalContext";
 
 const useCustomBoard = (chess: Chess) => {
 	// data
+	const chessGameRef = useRef(chess);
+	const chessGame = chessGameRef.current;
+	
 	const [chessPosition, setChessPosition] = useState(chess.fen());
 	const [squareWidth, setSquareWidth] = useState<number | null>(null);
 
@@ -18,9 +21,6 @@ const useCustomBoard = (chess: Chess) => {
 			?.getBoundingClientRect();
 		setSquareWidth(square?.width || 50);
 	}, []);
-
-	const chessGameRef = useRef(chess);
-	const chessGame = chessGameRef.current;
 
 	const { boardTheme } = useBoardColors();
 
@@ -83,6 +83,7 @@ const useCustomBoard = (chess: Chess) => {
 		whitePieceTypes,
 		blackPieceTypes,
 		squareWidth,
+		setChessPosition
 	};
 };
 export default useCustomBoard;

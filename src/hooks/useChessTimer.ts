@@ -47,13 +47,13 @@ const useChessTimer = (
 	// bonus time
 	const handleMoveMade = useCallback(
 		(playerWhoMoved: Color) => {
-			if (initialTime === Infinity || !isActive) return;
+			if (initialTime === Infinity) return;
 
 			if (playerWhoMoved === "w")
 				setWhiteTimeRemaining((prev) => prev + bonusTime);
 			else setBlackTimeRemaining((prev) => prev + bonusTime);
 		},
-		[initialTime, bonusTime, isActive],
+		[initialTime, bonusTime],
 	);
 
     // reset clocks

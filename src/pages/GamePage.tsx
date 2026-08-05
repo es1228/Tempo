@@ -70,7 +70,7 @@ const GamePage = () => {
 		initialTime ?? Infinity,
 		bonusTime ?? 0,
 		checkActivePlayer(chessPosition),
-		!isDialogOpen,
+		!isDialogOpen && !chessGameRef.current.isGameOver(),
 	);
 
 	useEffect(() => {

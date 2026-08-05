@@ -83,6 +83,7 @@ const ReviewPage = () => {
 	return (
 		<>
 			<ImportDialog
+				values={["Chess.com", "PGN", "FEN"]}
 				isDialogOpen={isDialogOpen}
 				closeDialog={() => setIsDialogOpen(false)}
 				handleImport={handleImport}

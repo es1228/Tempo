@@ -12,12 +12,14 @@ import Dropdown from "./Dropdown";
 import Searchbar from "./Searchbar";
 
 type ImportDialogProps = {
+	values: string[];
 	isDialogOpen: boolean;
 	closeDialog: () => void;
 	handleImport: (data: any) => void;
 };
 
 const ImportDialog = ({
+	values,
 	isDialogOpen,
 	closeDialog,
 	handleImport,
@@ -25,7 +27,7 @@ const ImportDialog = ({
 	// data
 	const [playerID, setPlayerID] = useState<string>("");
 	const [month, setMonth] = useState<number>(0);
-	const [selectedValue, setSelectedValue] = useState<string>("Chess.com");
+	const [selectedValue, setSelectedValue] = useState<string>(values[0]);
 	const [textValue, setTextValue] = useState<string>("");
 	const { games, range } = useFetchChessCom({
 		playerID: playerID,
@@ -49,8 +51,6 @@ const ImportDialog = ({
 		return () =>
 			document.removeEventListener("mousedown", handleOutsideClick);
 	}, [isDialogOpen]);
-
-	const values = ["Chess.com", "PGN", "FEN"];
 
 	return (
 		<div
