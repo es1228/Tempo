@@ -116,7 +116,6 @@ const useBoard = ({
 			if (validateFen(trimmed).ok) {
 				initialFEN.current = trimmed;
 				chessGame.load(trimmed);
-				setCurrentMove(-1);
 				syncGameState();
 				return;
 			}
@@ -135,9 +134,10 @@ const useBoard = ({
 			setBlackElo(headers["BlackElo"] ?? "");
 
 			// sync
+			const history = chessGame.history({ verbose: true });
 			chessGame.reset();
+			syncGameState(history);
 			setCurrentMove(-1);
-			syncGameState();
 		} catch {
 			console.error("Unable to load pgn");
 		}
@@ -174,7 +174,8 @@ const useBoard = ({
 			!targetSquare ||
 			whiteTime === 0 ||
 			blackTime === 0 ||
-			(isPlayingAgainstEngine && chessGame.turn() !== playerColor)
+			(isPlayingAgainstEngine && chessGame.turn() !== playerColor) ||
+			chessGame.isGameOver()
 		) {
 			return false;
 		}
@@ -247,7 +248,8 @@ const useBoard = ({
 		if (
 			whiteTime === 0 ||
 			blackTime === 0 ||
-			(isPlayingAgainstEngine && chessGame.turn() !== playerColor)
+			(isPlayingAgainstEngine && chessGame.turn() !== playerColor) ||
+			chessGame.isGameOver()
 		)
 			return;
 

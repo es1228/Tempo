@@ -10,7 +10,7 @@ const Searchbar = ({ placeholder, value, onChange }: SearchbarProps) => {
 	return (
 		<>
 			<div className="relative">
-				<div className="absolute z-1000 m-3">
+				<div className="absolute z-10 m-3">
 					<span className="icon icon-rounded group-hover:icon-filled group-hover:icon-700 transition-all duration-100">
 						search
 					</span>

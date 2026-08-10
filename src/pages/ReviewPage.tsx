@@ -2,15 +2,12 @@ import { Chessboard } from "react-chessboard";
 import EvalBar from "../components/EvalBar";
 import Button from "../components/Button";
 import useBoard from "../hooks/useBoard";
-import useStockfish from "../hooks/useStockfish";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useClassify from "../hooks/useClassify";
-import { convertEvaluation } from "../utils/convertEvaluation";
 import ImportDialog from "../components/ImportDialog";
 import PlayerContainer from "../components/PlayerContainer";
 import MoveFeedbackContainer from "../components/MoveFeedbackContainer";
 import HistoryContainer from "../components/HistoryContainer";
-import { type AnalysisCache } from "../types/AnalysisCache";
 import PromotionDialog from "../components/PromotionDialog";
 import type { PieceSymbol, Square } from "chess.js";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
@@ -18,9 +15,6 @@ import { checkActivePlayer } from "../utils/checkActivePlayer";
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-	const [gameCache, setGameCache] = useState<Record<number, AnalysisCache>>(
-		{},
-	);
 
 	const {
 		options,
@@ -33,45 +27,16 @@ const ReviewPage = () => {
 		lastMove,
 		promotionMove,
 		onPromotionPieceSelect,
+		whitePlayer,
+		blackPlayer,
+		whiteElo,
+		blackElo,
 	} = useBoard({
 		boardOrientation: isFlipped ? "black" : "white",
 	});
 
-	const { bestMove, evaluation, pv, isThinking } = useStockfish({
-		fen: chessPosition,
-		depth: 20,
-		lines: 2,
-	});
-
-	useEffect(() => {
-		if (!isThinking && bestMove && evaluation) {
-			setGameCache((prev) => ({
-				...prev,
-				[currentMove]: {
-					bestMove,
-					evaluation,
-					pv,
-				},
-			}));
-		}
-	}, [isThinking, bestMove, evaluation, pv, currentMove]);
-
-	const prevAnalysis = gameCache[currentMove - 1];
-
-	const evalAtCurrent =
-		gameCache[currentMove]?.evaluation ?? evaluation ?? "+0.0";
-	const evalAtPrev = gameCache[currentMove - 1]?.evaluation ?? "+0.0";
-	const evalAtPrev2 = gameCache[currentMove - 2]?.evaluation ?? "+0.0";
-
-	const { classification, opening } = useClassify(
-		chessPGN,
-		prevAnalysis?.bestMove,
-		convertEvaluation(evalAtPrev2),
-		convertEvaluation(evalAtPrev),
-		convertEvaluation(evalAtCurrent),
-		prevAnalysis?.pv?.[0],
-		prevAnalysis?.pv?.[1],
-		isThinking,
+	const { classification, opening, prevBestMove, evaluation } = useClassify(
+		chessPGN
 	);
 
 	const handleImport = (data: string) => {
@@ -93,9 +58,21 @@ const ReviewPage = () => {
 					<EvalBar evaluation={evaluation} isFlipped={isFlipped} />
 					<div className="flex flex-col justify-start">
 						{isFlipped ? (
-							<PlayerContainer text="White" />
+							<PlayerContainer
+								text={
+									whitePlayer
+										? `${whitePlayer} (${whiteElo})`
+										: "White"
+								}
+							/>
 						) : (
-							<PlayerContainer text="Black" />
+							<PlayerContainer
+								text={
+									blackPlayer
+										? `${blackPlayer} (${blackElo})`
+										: "Black"
+								}
+							/>
 						)}
 						<div className="w-auto md:w-120">
 							<Chessboard
@@ -140,9 +117,21 @@ const ReviewPage = () => {
 							/>
 						</div>
 						{isFlipped ? (
-							<PlayerContainer text="Black" />
+							<PlayerContainer
+								text={
+									blackPlayer
+										? `${blackPlayer} (${blackElo})`
+										: "Black"
+								}
+							/>
 						) : (
-							<PlayerContainer text="White" />
+							<PlayerContainer
+								text={
+									whitePlayer
+										? `${whitePlayer} (${whiteElo})`
+										: "White"
+								}
+							/>
 						)}
 					</div>
 				</div>
@@ -158,16 +147,14 @@ const ReviewPage = () => {
 					</div>
 					<MoveFeedbackContainer
 						feedback={`${
-							lastMove &&
-							`${lastMove} is ${isThinking ? "Loading" : classification}`
+							lastMove && `${lastMove} is ${classification}`
 						}`}
 						best={
-							prevAnalysis?.bestMove &&
-							!isThinking &&
+							prevBestMove &&
 							classification !== "best" &&
 							classification !== "great" &&
 							classification !== "theory"
-								? `The Best Move was ${prevAnalysis?.bestMove}`
+								? `The Best Move was ${prevBestMove}`
 								: ""
 						}
 						opening={`${opening && `${opening}`}`}

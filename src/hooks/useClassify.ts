@@ -2,28 +2,53 @@ import { Chess } from "chess.js";
 import { checkOpenings } from "../utils/checkOpenings";
 import { expectedPoints } from "../utils/expectedPoints";
 import { useEffect, useState } from "react";
-import type { PV } from "../types/PV";
+import useStockfish from "./useStockfish";
+import { convertEvaluation } from "../utils/convertEvaluation";
+import { convertPGNToFENs } from "../utils/convertPgnToFens";
 
-const useClassify = (
-	pgn: string,
-	bestMove: string,
-	evalAtPrev2: number,
-	evalAtPrev: number,
-	evalAtCurrent: number,
-	pv1: PV,
-	pv2: PV,
-	isThinking: boolean,
-) => {
+const useClassify = (pgn: string) => {
 	// variables
 	const [classification, setClassification] = useState("");
 	const [opening, setOpening] = useState("");
+
+	// get fens
+	const fens = convertPGNToFENs(pgn);
+	const fenAtCurr = fens.at(-1);
+	const fenAtPrev = fens.at(-2);
+	const fenAtPrev2 = fens.at(-3);
+
+	// get data from stockfish
+	const prev2Stockfish = useStockfish({
+		fen: fenAtPrev2 ?? "",
+		depth: 20,
+		lines: 2,
+	});
+
+	const prevStockfish = useStockfish({
+		fen: fenAtPrev ?? "",
+		depth: 20,
+		lines: 2,
+	});
+
+	const currStockfish = useStockfish({
+		fen: fenAtCurr ?? "",
+		depth: 20,
+		lines: 2,
+	});
 
 	useEffect(() => {
 		// prevent old data
 		let isActive = true;
 		setClassification("Loading");
 
-		if (isThinking) return;
+		if (
+			prev2Stockfish.isThinking ||
+			prevStockfish.isThinking ||
+			currStockfish.isThinking ||
+			!prevStockfish.bestMove ||
+			!currStockfish.evaluation
+		)
+			return;
 
 		const runClassification = async () => {
 			// theory
@@ -70,20 +95,21 @@ const useClassify = (
 				return;
 			}
 
-			if (pv1 && pv2) {
+			if (prevStockfish.pv.length > 0) {
 				// great moves
 				const isbetterMovePlayed =
-					movePlayed && movePlayed === bestMove;
+					movePlayed && movePlayed === prevStockfish.bestMove;
 
 				// check if the move is not losing
-				const isDrawnOrWinning = pv1.score > -500;
+				const isDrawnOrWinning = prevStockfish.pv[0].score > -500;
 
 				// calculate difference between top 2 moves
-				const pvDiff = pv1.score - pv2.score;
+				const pvDiff =
+					prevStockfish.pv[0].score - prevStockfish.pv[1].score;
 
 				// only good move + not already winning
 				const isOnlyGoodMove = pvDiff > 150;
-				const isNotAlreadyWinning = pv2.score < 400;
+				const isNotAlreadyWinning = prevStockfish.pv[0].score < 400;
 
 				if (
 					isbetterMovePlayed &&
@@ -97,7 +123,7 @@ const useClassify = (
 			}
 
 			// best moves
-			if (movePlayed === bestMove) {
+			if (movePlayed === prevStockfish.bestMove) {
 				setClassification("best");
 				return;
 			}
@@ -107,13 +133,13 @@ const useClassify = (
 			const opponentColor = colorTurn === "b" ? "w" : "b";
 
 			const classification1 = expectedPoints(
-				evalAtPrev,
-				evalAtCurrent,
+				convertEvaluation(prevStockfish.evaluation),
+				convertEvaluation(currStockfish.evaluation),
 				colorTurn,
 			);
 			const classification2 = expectedPoints(
-				evalAtPrev2,
-				evalAtPrev,
+				convertEvaluation(prev2Stockfish.evaluation),
+				convertEvaluation(prevStockfish.evaluation),
 				opponentColor,
 			);
 
@@ -136,16 +162,19 @@ const useClassify = (
 			isActive = false;
 		};
 	}, [
-		pgn,
-		bestMove,
-		evalAtCurrent,
-		evalAtPrev,
-		evalAtPrev2,
-		isThinking,
-		pv1,
-		pv2,
+		fenAtCurr,
+		fenAtPrev,
+		fenAtPrev2,
+		currStockfish,
+		prevStockfish,
+		prev2Stockfish,
 	]);
 	// return data
-	return { classification, opening };
+	return {
+		classification,
+		opening,
+		prevBestMove: prevStockfish.bestMove,
+		evaluation: currStockfish.evaluation,
+	};
 };
 export default useClassify;

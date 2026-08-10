@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { uciToSan } from "../utils/uciToSan";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
 import type { PV } from "../types/PV";
+import useEvalCache from "./useEvalCache";
 
 // props
 type useStockfishProps = {
@@ -17,6 +18,8 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 	const [evaluation, setEvaluation] = useState<string>("");
 	const [pv, setPV] = useState<PV[]>([]);
 	const [isThinking, setIsThinking] = useState<boolean>(false);
+
+	const { getCachedEval, setCachedEval } = useEvalCache();
 
 	// store fen as ref
 	const fenRef = useRef(fen);
@@ -81,17 +84,20 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 					if (MultiPVIndex === 1) {
 						// check active player
 						const activePlayer = checkActivePlayer(fenRef.current);
-						const formattedScore = activePlayer === "b" ? -1 * score : score
+						const formattedScore =
+							activePlayer === "b" ? -1 * score : score;
 
 						// check the score type
+						let evalStr = "";
 						if (scoreType === "cp") {
-							setEvaluation(
-								`${formattedScore > 0 ? "+" : ""}${(formattedScore / 100).toFixed(1)}`,
-							);
+							evalStr = `${formattedScore > 0 ? "+" : ""}${(formattedScore / 100).toFixed(1)}`;
 						} else if (scoreType === "mate") {
-							setEvaluation(
-								`${formattedScore > 0 ? "+" : "-"}M${Math.abs(formattedScore)}`,
-							);
+							evalStr = `${formattedScore > 0 ? "+" : "-"}M${Math.abs(formattedScore)}`;
+						}
+
+						if (evalStr) {
+							setEvaluation(evalStr);
+							setCachedEval(fenRef.current, evalStr);
 						}
 					}
 				}
@@ -104,6 +110,10 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 
 					// set the evaluation to checkmate
 					setEvaluation(`${sign}M0`);
+				}
+				if (event.data.includes("info depth 0 score cp 0")) {
+					// draw
+					setEvaluation("+0.0");
 				}
 			}
 		};
@@ -122,6 +132,17 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 		const stockfish = stockfishRef.current;
 		if (!stockfish) return;
 
+		// cache
+		const cached = getCachedEval(fen);
+
+		if (cached) {
+			setEvaluation(cached);
+			setIsThinking(false);
+			setPV([]);
+			setBestMove("");
+			return;
+		}
+
 		// set thinking
 		setIsThinking(true);
 		setPV([]);
@@ -129,18 +150,21 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 
 		// stop old analysis
 		stockfish.postMessage("stop");
+		stockfish.postMessage("ucinewgame");
 
 		// send message to evaluate
-		stockfish.postMessage(`position fen ${fen}`);
 		stockfish.postMessage(`setoption name MultiPV value ${lines}`);
-		stockfish.postMessage(`setoption name Skill Level value ${skill}`);
+		stockfish.postMessage(
+			`setoption name Skill Level value ${skill ?? 20}`,
+		);
+		stockfish.postMessage(`position fen ${fen}`);
 		stockfish.postMessage(`go depth ${depth}`);
 
 		// cleanup
 		return () => {
 			stockfish.postMessage("stop");
 		};
-	}, [fen, depth, lines]);
+	}, [fen, depth, lines, skill, getCachedEval]);
 
 	// return the result
 	return { bestMove, evaluation, pv, isThinking };
