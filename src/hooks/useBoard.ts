@@ -122,6 +122,8 @@ const useBoard = ({
 				initialFEN.current = trimmed;
 				chessGame.load(trimmed);
 				syncGameState();
+				setCurrentMove(-1);
+				setHistory([]);
 				return;
 			}
 

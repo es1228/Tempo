@@ -1,5 +1,6 @@
 import type { Chess } from "chess.js";
 import { checkActivePlayer } from "./checkActivePlayer";
+import { hasInsufficientMaterial } from "./hasInsufficientMaterial";
 
 const getGameResult = (
 	chessGame: Chess,
@@ -18,6 +19,11 @@ const getGameResult = (
 	if (chessGame.isThreefoldRepetition())
 		return "Draw by threefold repetition";
 	if (chessGame.isDrawByFiftyMoves()) return "Draw by 50 move rule";
+	if (
+		(whiteTime === 0 && hasInsufficientMaterial(chessGame, "b")) ||
+		(blackTime === 0 && hasInsufficientMaterial(chessGame, "w"))
+	)
+		return "Draw by insufficient vs timeout";
 	if (whiteTime === 0) return `${blackName} won by timeout`;
 	if (blackTime === 0) return `${whiteName} won by timeout`;
 

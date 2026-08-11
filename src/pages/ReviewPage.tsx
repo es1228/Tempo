@@ -2,7 +2,7 @@ import { Chessboard } from "react-chessboard";
 import EvalBar from "../components/EvalBar";
 import Button from "../components/Button";
 import useBoard from "../hooks/useBoard";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import useClassify from "../hooks/useClassify";
 import ImportDialog from "../components/ImportDialog";
 import PlayerContainer from "../components/PlayerContainer";
@@ -13,6 +13,7 @@ import type { PieceSymbol, Square } from "chess.js";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
 import { runGameReview, type Stats } from "../utils/runGameReview";
 import useEvalCache from "../hooks/useEvalCache";
+import { getMoveColor } from "../utils/getMoveColor";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -37,7 +38,7 @@ const ReviewPage = () => {
 		boardOrientation: isFlipped ? "black" : "white",
 	});
 
-	const {getCachedEval, setCachedEval} = useEvalCache();
+	const { getCachedEval, setCachedEval } = useEvalCache();
 
 	const { classification, opening, prevBestMove, evaluation } = useClassify(
 		chessPGN,
@@ -96,13 +97,27 @@ const ReviewPage = () => {
 										const squareStyle =
 											options.squareStyles?.[square] ??
 											{};
+										const moveColor =
+											getMoveColor(classification);
+										const startSquare =
+											history?.at(currentMove)?.from;
 										const endSquare =
 											history?.at(currentMove)?.to;
+										const highlightStyle: CSSProperties =
+											currentMove >= 0 && (square === startSquare ||
+											square === endSquare)
+												? {
+														backgroundColor: `color-mix(in oklch, ${moveColor} 40%, transparent)`,
+													}
+												: {};
 
 										return (
 											<div
 												className="relative z-100 h-full w-full overflow-visible"
-												style={squareStyle}
+												style={{
+													...squareStyle,
+													...highlightStyle,
+												}}
 											>
 												{children}
 												{currentMove >= 0 &&
@@ -171,7 +186,6 @@ const ReviewPage = () => {
 						opening={`${opening && `${opening}`}`}
 					/>
 					<HistoryContainer history={history} goToMove={goToMove} />
-					<p>{stats?.white.best ?? "Loading..."}</p>
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
 							icon="first_page"
