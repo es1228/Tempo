@@ -29,6 +29,18 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 		fenRef.current = fen;
 	}, [fen]);
 
+	// data refs
+	const evaluationRef = useRef(evaluation);
+	const pvRef = useRef(pv);
+	const bestMoveRef = useRef(bestMove);
+
+	// sync data
+	useEffect(() => {
+		evaluationRef.current = evaluation;
+		pvRef.current = pv;
+		bestMoveRef.current = bestMove;
+	}, [bestMove, evaluation, pv]);
+
 	// store the stockfish
 	const stockfishRef = useRef<Worker | null>(null);
 
@@ -38,17 +50,12 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 		const stockfish = new Worker("/stockfish/stockfish-18-lite.js");
 		stockfishRef.current = stockfish;
 		setPV([]);
+		const localPV: PV[] = [];
 
 		// listen for message
 		stockfish.onmessage = (event) => {
 			console.log(event.data);
-			// extract best move
-			if (event.data.startsWith("bestmove")) {
-				const uci = event.data.split(" ")[1];
-				const currentFen = fenRef.current;
-				setBestMove(uciToSan(currentFen, uci)!);
-				setIsThinking(false);
-			}
+			setIsThinking(true);
 
 			// extract evaluation
 			if (event.data.includes("info") && event.data.includes("score")) {
@@ -71,15 +78,13 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 					// update pv
 					const moveStr = event.data.split(" pv ")[1];
 
-					!isNaN(MultiPVIndex) &&
-						setPV((prev) => {
-							const updated = [...prev];
-							updated[MultiPVIndex - 1] = {
-								moves: moveStr,
-								score: score,
-							};
-							return updated;
-						});
+					if (!isNaN(MultiPVIndex) && moveStr) {
+						localPV[MultiPVIndex - 1] = {
+							moves: moveStr,
+							score: score,
+						};
+						setPV([...localPV])
+					}
 
 					if (MultiPVIndex === 1) {
 						// check active player
@@ -97,7 +102,6 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 
 						if (evalStr) {
 							setEvaluation(evalStr);
-							setCachedEval(fenRef.current, evalStr);
 						}
 					}
 				}
@@ -115,6 +119,20 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 					// draw
 					setEvaluation("+0.0");
 				}
+			}
+			// extract best move
+			else if (event.data.startsWith("bestmove")) {
+				const uci = event.data.split(" ")[1];
+				const currentFen = fenRef.current;
+				const best = uciToSan(currentFen, uci)!;
+				setBestMove(best);
+				setCachedEval(
+					currentFen,
+					evaluationRef.current,
+					best,
+					localPV
+				);
+				setIsThinking(false);
 			}
 		};
 
@@ -135,12 +153,15 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 		// cache
 		const cached = getCachedEval(fen);
 
-		if (cached) {
-			setEvaluation(cached);
+		if (cached?.bestMove && cached?.evaluation && cached?.pv) {
+			console.log(cached);
+			setEvaluation(cached.evaluation);
+			setBestMove(cached.bestMove);
+			setPV(cached.pv);
 			setIsThinking(false);
-			setPV([]);
-			setBestMove("");
-			return;
+			return () => {
+				stockfish.postMessage("stop");
+			};
 		}
 
 		// set thinking

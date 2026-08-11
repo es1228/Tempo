@@ -11,6 +11,8 @@ import HistoryContainer from "../components/HistoryContainer";
 import PromotionDialog from "../components/PromotionDialog";
 import type { PieceSymbol, Square } from "chess.js";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
+import { runGameReview } from "../utils/runGameReview";
+import useEvalCache from "../hooks/useEvalCache";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -39,10 +41,14 @@ const ReviewPage = () => {
 		chessPGN
 	);
 
-	const handleImport = (data: string) => {
+	const {getCachedEval, setCachedEval} = useEvalCache();
+
+	const handleImport = async (data: string) => {
 		if (!data) return;
 		setChessPGN(data);
 		setIsDialogOpen(false);
+		const stats = await runGameReview(data, getCachedEval, setCachedEval);
+		console.log(stats);
 	};
 
 	return (

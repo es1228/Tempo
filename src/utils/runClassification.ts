@@ -5,33 +5,38 @@ import type { PV } from "../types/PV";
 import { expectedPoints } from "./expectedPoints";
 
 type runClassificationProps = {
-    currStockfish: {evaluation: string}
-    prevStockfish: {evaluation: string, bestMove: string, pv: PV[]}
-    prev2Stockfish: {evaluation: string}
-    fenAtCurr: string,
-    fenAtPrev: string,
-}
-
-export const runClassification = async ({currStockfish, prevStockfish, prev2Stockfish, fenAtCurr, fenAtPrev}: runClassificationProps) => {
+	currStockfish: { evaluation: string };
+	prevStockfish: { evaluation: string; bestMove: string; pv: PV[] };
+	prev2Stockfish: { evaluation: string };
+	pgn: string;
+};
+export const runClassification = async ({pgn, currStockfish, prevStockfish, prev2Stockfish}: runClassificationProps) => {
 	// theory
 
 	// load the previous position
 	const chess = new Chess();
-	chess.load(fenAtCurr);
+	chess.loadPgn(pgn);
 
 	// classify as theory if the fen matches an openings database
 	const opening = await checkOpenings(chess.fen());
 	if (opening) {
 		return {classification: "theory", opening}
 	}
-	// forced moves
-	chess.load(fenAtPrev);
 
-    if (chess.moves().length === 1)
-        return {classification: "forced"}
+	// forced moves
+	const lastMove = chess.undo();
+
+	if (lastMove) {
+		// if there was only 1 move use forced classification
+		const moves = chess.moves().length;
+		chess.move(lastMove);
+		if (moves === 1) {
+			return {classification: "forced"}
+		}
+	}
 
 	// reload position
-	chess.load(fenAtCurr);
+	chess.loadPgn(pgn);
 
 	// get the last move
 	const history = chess.history();

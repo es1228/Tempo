@@ -1,10 +1,7 @@
-import { Chess } from "chess.js";
-import { checkOpenings } from "../utils/checkOpenings";
-import { expectedPoints } from "../utils/expectedPoints";
 import { useEffect, useState } from "react";
 import useStockfish from "./useStockfish";
-import { convertEvaluation } from "../utils/convertEvaluation";
-import { convertPGNToFENs } from "../utils/convertPgnToFens";
+import { convertPGNToFENs } from "../utils/convertPGNToFENs";
+import { runClassification } from "../utils/runClassification";
 
 const useClassify = (pgn: string) => {
 	// variables
@@ -20,21 +17,25 @@ const useClassify = (pgn: string) => {
 	// get data from stockfish
 	const prev2Stockfish = useStockfish({
 		fen: fenAtPrev2 ?? "",
-		depth: 20,
+		depth: 18,
 		lines: 2,
 	});
 
 	const prevStockfish = useStockfish({
 		fen: fenAtPrev ?? "",
-		depth: 20,
+		depth: 18,
 		lines: 2,
 	});
 
 	const currStockfish = useStockfish({
 		fen: fenAtCurr ?? "",
-		depth: 20,
+		depth: 18,
 		lines: 2,
 	});
+
+	useEffect(() => {
+		setClassification("Loading");
+	}, [fenAtCurr, fenAtPrev, fenAtPrev2]);
 
 	useEffect(() => {
 		// prevent old data
@@ -50,112 +51,19 @@ const useClassify = (pgn: string) => {
 		)
 			return;
 
-		const runClassification = async () => {
-			// theory
-
-			// load the previous position
-			const chess = new Chess();
-			chess.loadPgn(pgn);
-
-			if (!isActive || chess.history().length === 0) return;
-
-			// classify as theory if the fen matches an openings database
-			const opening = await checkOpenings(chess.fen());
-			if (opening) {
-				setClassification("theory");
-				setOpening(opening);
-				return;
-			}
-
+		const run = async () => {
 			if (!isActive) return;
 
-			// forced moves
-			const lastMove = chess.undo();
-
-			if (lastMove) {
-				// if there was only 1 move use forced classification
-				const moves = chess.moves().length;
-				chess.move(lastMove);
-				if (moves === 1) {
-					setClassification("forced");
-					return;
-				}
-			}
-
-			// reload position
-			chess.loadPgn(pgn);
-
-			// get the last move
-			const history = chess.history();
-			const movePlayed = history[history.length - 1];
-
-			// check if in checkmate
-			if (chess.isCheckmate()) {
-				setClassification("best");
-				return;
-			}
-
-			if (prevStockfish.pv.length > 0) {
-				// great moves
-				const isbetterMovePlayed =
-					movePlayed && movePlayed === prevStockfish.bestMove;
-
-				// check if the move is not losing
-				const isDrawnOrWinning = prevStockfish.pv[0].score > -500;
-
-				// calculate difference between top 2 moves
-				const pvDiff =
-					prevStockfish.pv[0].score - prevStockfish.pv[1].score;
-
-				// only good move + not already winning
-				const isOnlyGoodMove = pvDiff > 150;
-				const isNotAlreadyWinning = prevStockfish.pv[0].score < 400;
-
-				if (
-					isbetterMovePlayed &&
-					isOnlyGoodMove &&
-					isNotAlreadyWinning &&
-					isDrawnOrWinning
-				) {
-					setClassification("great");
-					return;
-				}
-			}
-
-			// best moves
-			if (movePlayed === prevStockfish.bestMove) {
-				setClassification("best");
-				return;
-			}
-
-			// other classifications using expected points model
-			const colorTurn = chess.turn();
-			const opponentColor = colorTurn === "b" ? "w" : "b";
-
-			const classification1 = expectedPoints(
-				convertEvaluation(prevStockfish.evaluation),
-				convertEvaluation(currStockfish.evaluation),
-				colorTurn,
-			);
-			const classification2 = expectedPoints(
-				convertEvaluation(prev2Stockfish.evaluation),
-				convertEvaluation(prevStockfish.evaluation),
-				opponentColor,
-			);
-
-			// calculate miss
-			if (
-				(classification1 === "a blunder" ||
-					classification1 === "a mistake") &&
-				(classification2 === "a blunder" ||
-					classification2 === "a mistake")
-			)
-				setClassification("a miss");
-			else setClassification(classification1);
-
-			return;
+			const result = await runClassification({
+				pgn,
+				currStockfish,
+				prevStockfish,
+				prev2Stockfish,
+			});
+			setClassification(result.classification);
+			if (result.opening) setOpening(result.opening);
 		};
-		runClassification();
+		run();
 
 		// cleanup
 		return () => {
