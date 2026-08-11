@@ -14,6 +14,7 @@ import { checkActivePlayer } from "../utils/checkActivePlayer";
 import { runGameReview, type Stats } from "../utils/runGameReview";
 import useEvalCache from "../hooks/useEvalCache";
 import { getMoveColor } from "../utils/getMoveColor";
+import LinesContainer from "../components/LinesContainer";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -40,11 +41,8 @@ const ReviewPage = () => {
 
 	const { getCachedEval, setCachedEval } = useEvalCache();
 
-	const { classification, opening, prevBestMove, evaluation } = useClassify(
-		chessPGN,
-		getCachedEval,
-		setCachedEval,
-	);
+	const { classification, opening, prevBestMove, evaluation, pv } =
+		useClassify(chessPGN, getCachedEval, setCachedEval);
 
 	const [stats, setStats] = useState<Stats>();
 
@@ -104,8 +102,9 @@ const ReviewPage = () => {
 										const endSquare =
 											history?.at(currentMove)?.to;
 										const highlightStyle: CSSProperties =
-											currentMove >= 0 && (square === startSquare ||
-											square === endSquare)
+											currentMove >= 0 &&
+											(square === startSquare ||
+												square === endSquare)
 												? {
 														backgroundColor: `color-mix(in oklch, ${moveColor} 40%, transparent)`,
 													}
@@ -185,6 +184,7 @@ const ReviewPage = () => {
 						}
 						opening={`${opening && `${opening}`}`}
 					/>
+					<LinesContainer chessPosition={chessPosition} pv={pv}/>
 					<HistoryContainer history={history} goToMove={goToMove} />
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button

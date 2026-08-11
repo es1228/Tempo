@@ -100,6 +100,7 @@ const useClassify = (
 		opening,
 		prevBestMove: prevStockfish.bestMove,
 		evaluation: currStockfish.evaluation,
+		pv: currStockfish.pv,
 	};
 };
 export default useClassify;
