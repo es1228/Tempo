@@ -11,7 +11,7 @@ import HistoryContainer from "../components/HistoryContainer";
 import PromotionDialog from "../components/PromotionDialog";
 import type { PieceSymbol, Square } from "chess.js";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
-import { runGameReview } from "../utils/runGameReview";
+import { runGameReview, type Stats } from "../utils/runGameReview";
 import useEvalCache from "../hooks/useEvalCache";
 
 const ReviewPage = () => {
@@ -37,18 +37,23 @@ const ReviewPage = () => {
 		boardOrientation: isFlipped ? "black" : "white",
 	});
 
+	const {getCachedEval, setCachedEval} = useEvalCache();
+
 	const { classification, opening, prevBestMove, evaluation } = useClassify(
-		chessPGN
+		chessPGN,
+		getCachedEval,
+		setCachedEval,
 	);
 
-	const {getCachedEval, setCachedEval} = useEvalCache();
+	const [stats, setStats] = useState<Stats>();
 
 	const handleImport = async (data: string) => {
 		if (!data) return;
 		setChessPGN(data);
 		setIsDialogOpen(false);
-		const stats = await runGameReview(data, getCachedEval, setCachedEval);
-		console.log(stats);
+		const result = await runGameReview(data, getCachedEval, setCachedEval);
+		setStats(result);
+		console.log(result);
 	};
 
 	return (
@@ -166,6 +171,7 @@ const ReviewPage = () => {
 						opening={`${opening && `${opening}`}`}
 					/>
 					<HistoryContainer history={history} goToMove={goToMove} />
+					<p>{stats?.white.best ?? "Loading..."}</p>
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
 							icon="first_page"

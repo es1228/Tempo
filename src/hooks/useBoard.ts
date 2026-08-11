@@ -16,6 +16,7 @@ import type { BoardColors } from "../types/BoardColors";
 import { useBoardColors } from "../globalContext";
 import useStockfish from "./useStockfish";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
+import useEvalCache from "./useEvalCache";
 
 type useBoardProps = {
 	boardOrientation: BoardColors;
@@ -59,11 +60,15 @@ const useBoard = ({
 
 	const { boardTheme } = useBoardColors();
 
+	const { getCachedEval, setCachedEval } = useEvalCache();
+
 	const { bestMove } = useStockfish({
 		fen: chessGame.fen(),
 		depth: 20,
 		lines: 1,
 		skill: engineStrength,
+		getCachedEval,
+		setCachedEval,
 	});
 
 	// detect promotion move

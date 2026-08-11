@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { uciToSan } from "../utils/uciToSan";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
 import type { PV } from "../types/PV";
-import useEvalCache from "./useEvalCache";
+import type { CachedEvalData } from "./useEvalCache";
 
 // props
 type useStockfishProps = {
@@ -10,16 +10,28 @@ type useStockfishProps = {
 	depth: number;
 	lines: number;
 	skill?: number;
+	getCachedEval: (fen: string | undefined) => CachedEvalData | undefined;
+	setCachedEval: (
+		fen: string,
+		evaluation: string,
+		bestMove: string,
+		pv: PV[],
+	) => void;
 };
 
-const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
+const useStockfish = ({
+	fen,
+	depth,
+	lines,
+	skill,
+	getCachedEval,
+	setCachedEval,
+}: useStockfishProps) => {
 	// data
 	const [bestMove, setBestMove] = useState<string>("");
 	const [evaluation, setEvaluation] = useState<string>("");
 	const [pv, setPV] = useState<PV[]>([]);
 	const [isThinking, setIsThinking] = useState<boolean>(false);
-
-	const { getCachedEval, setCachedEval } = useEvalCache();
 
 	// store fen as ref
 	const fenRef = useRef(fen);
@@ -83,7 +95,7 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 							moves: moveStr,
 							score: score,
 						};
-						setPV([...localPV])
+						setPV([...localPV]);
 					}
 
 					if (MultiPVIndex === 1) {
@@ -126,12 +138,7 @@ const useStockfish = ({ fen, depth, lines, skill }: useStockfishProps) => {
 				const currentFen = fenRef.current;
 				const best = uciToSan(currentFen, uci)!;
 				setBestMove(best);
-				setCachedEval(
-					currentFen,
-					evaluationRef.current,
-					best,
-					localPV
-				);
+				setCachedEval(currentFen, evaluationRef.current, best, localPV);
 				setIsThinking(false);
 			}
 		};

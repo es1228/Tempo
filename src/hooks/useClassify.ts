@@ -2,8 +2,19 @@ import { useEffect, useState } from "react";
 import useStockfish from "./useStockfish";
 import { convertPGNToFENs } from "../utils/convertPGNToFENs";
 import { runClassification } from "../utils/runClassification";
+import type { CachedEvalData } from "./useEvalCache";
+import type { PV } from "../types/PV";
 
-const useClassify = (pgn: string) => {
+const useClassify = (
+	pgn: string,
+	getCachedEval: (fen: string | undefined) => CachedEvalData | undefined,
+	setCachedEval: (
+		fen: string,
+		evaluation: string,
+		bestMove: string,
+		pv: PV[],
+	) => void,
+) => {
 	// variables
 	const [classification, setClassification] = useState("");
 	const [opening, setOpening] = useState("");
@@ -19,18 +30,24 @@ const useClassify = (pgn: string) => {
 		fen: fenAtPrev2 ?? "",
 		depth: 18,
 		lines: 2,
+		getCachedEval,
+		setCachedEval,
 	});
 
 	const prevStockfish = useStockfish({
 		fen: fenAtPrev ?? "",
 		depth: 18,
 		lines: 2,
+		getCachedEval,
+		setCachedEval,
 	});
 
 	const currStockfish = useStockfish({
 		fen: fenAtCurr ?? "",
 		depth: 18,
 		lines: 2,
+		getCachedEval,
+		setCachedEval,
 	});
 
 	useEffect(() => {

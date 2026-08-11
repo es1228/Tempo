@@ -5,6 +5,33 @@ import { evaluateSinglePos } from "./evaluateSinglePos";
 import type { CachedEvalData } from "../hooks/useEvalCache";
 import type { PV } from "../types/PV";
 
+export type Stats = {
+	white: {
+		brilliant: number;
+		great: number;
+		best: number;
+		excellent: number;
+		good: number;
+		inaccuracy: number;
+		mistake: number;
+		blunder: number;
+		miss: number;
+		theory: number;
+	};
+	black: {
+		brilliant: number;
+		great: number;
+		best: number;
+		excellent: number;
+		good: number;
+		inaccuracy: number;
+		mistake: number;
+		blunder: number;
+		miss: number;
+		theory: number;
+	};
+};
+
 export const runGameReview = async (
 	pgn: string,
 	getCachedEval: (fen: string | undefined) => CachedEvalData | undefined,
@@ -23,7 +50,7 @@ export const runGameReview = async (
 	chess.loadPgn(pgn);
 	const history = chess.history({ verbose: true });
 
-	const stats = {
+	const stats: Stats = {
 		white: {
 			brilliant: 0,
 			great: 0,
@@ -73,9 +100,20 @@ export const runGameReview = async (
 		for (let j = 0; j <= i; j++) subChess.move(history[j]);
 
 		const pgn = subChess.pgn();
-		const fenAtCurr = fens.at(i + 1)?.split(" ").splice(0, 4).join(" ");
+		const fenAtCurr = fens
+			.at(i + 1)
+			?.split(" ")
+			.splice(0, 4)
+			.join(" ");
 		const fenAtPrev = fens.at(i)?.split(" ").splice(0, 4).join(" ");
-		const fenAtPrev2 = i > 0 ? fens.at(i - 1)?.split(" ").splice(0, 4).join(" ") : undefined;
+		const fenAtPrev2 =
+			i > 0
+				? fens
+						.at(i - 1)
+						?.split(" ")
+						.splice(0, 4)
+						.join(" ")
+				: undefined;
 
 		const currStockfish = getCachedEval(fenAtCurr) ?? {
 			evaluation: "+0.0",
