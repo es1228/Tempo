@@ -15,6 +15,7 @@ import { runGameReview, type Stats } from "../utils/runGameReview";
 import useEvalCache from "../hooks/useEvalCache";
 import { getMoveColor } from "../utils/getMoveColor";
 import LinesContainer from "../components/LinesContainer";
+import ClassificationContainer from "../components/ClassificationContainer";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -160,32 +161,38 @@ const ReviewPage = () => {
 						)}
 					</div>
 				</div>
-				<div className="bg-on-bg dark:bg-on-bg-dark mx-4 mb-40 flex flex-col justify-center gap-2 rounded-3xl p-2 lg:mt-40 lg:mr-10 lg:mb-0 lg:h-120 lg:w-fit lg:scale-125">
-					<div className="flex flex-row items-center justify-between">
-						<h1 className="p-2 text-2xl">Game Review</h1>
-						<Button
-							onClick={() => setIsDialogOpen(true)}
-							icon="download"
-							text="Import"
-							isSecondary
+				<div className="bg-on-bg dark:bg-on-bg-dark mx-4 mb-40 flex flex-col justify-center gap-2 overflow-auto rounded-3xl p-2 lg:mt-40 lg:mr-10 lg:mb-0 lg:h-120 lg:w-fit lg:scale-125">
+					<div className="overflow-auto space-y-2">
+						<div className="flex flex-row items-center justify-between">
+							<h1 className="p-2 text-2xl">Game Review</h1>
+							<Button
+								onClick={() => setIsDialogOpen(true)}
+								icon="download"
+								text="Import"
+								isSecondary
+							/>
+						</div>
+						<MoveFeedbackContainer
+							feedback={`${
+								lastMove && `${lastMove} is ${classification}`
+							}`}
+							best={
+								prevBestMove &&
+								classification !== "best" &&
+								classification !== "great" &&
+								classification !== "theory"
+									? `The Best Move was ${prevBestMove}`
+									: ""
+							}
+							opening={`${opening && `${opening}`}`}
 						/>
+						<LinesContainer chessPosition={chessPosition} pv={pv}/>
+						<HistoryContainer
+							history={history}
+							goToMove={goToMove}
+						/>
+						<ClassificationContainer stats={stats!}/>
 					</div>
-					<MoveFeedbackContainer
-						feedback={`${
-							lastMove && `${lastMove} is ${classification}`
-						}`}
-						best={
-							prevBestMove &&
-							classification !== "best" &&
-							classification !== "great" &&
-							classification !== "theory"
-								? `The Best Move was ${prevBestMove}`
-								: ""
-						}
-						opening={`${opening && `${opening}`}`}
-					/>
-					<LinesContainer chessPosition={chessPosition} pv={pv}/>
-					<HistoryContainer history={history} goToMove={goToMove} />
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
 							icon="first_page"

@@ -1,6 +1,6 @@
 const EngineContainer = () => {
 	return (
-		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary max-h-50 overflow-auto rounded-3xl p-4">
+		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary max-h-50 overflow-auto rounded-3xl p-4 w-full">
 			<h1>Engine Settings</h1>
 			<hr className="my-2 rounded" />
 			<h1>Difficulty</h1>

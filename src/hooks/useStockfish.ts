@@ -85,6 +85,7 @@ const useStockfish = ({
 						parts[parts.indexOf("multipv") + 1],
 					);
 
+					const mate = parts[scoreIndex + 1] === "mate";
 					const score = Number(parts[scoreIndex + 2]);
 
 					// update pv
@@ -94,6 +95,7 @@ const useStockfish = ({
 						localPV[MultiPVIndex - 1] = {
 							moves: moveStr,
 							score: score,
+							mate: mate,
 						};
 						setPV([...localPV]);
 					}

@@ -19,7 +19,7 @@ const HistoryContainer = ({ history, goToMove }: HistoryContainerProps) => {
 		});
 	}
 	return (
-		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-4 max-h-50 overflow-auto">
+		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-4">
             <h1>History</h1>
             <hr className="rounded my-2"/>
 			<ol className="list-decimal">
