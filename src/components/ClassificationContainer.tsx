@@ -3,19 +3,29 @@ import type { Stats } from "../utils/runGameReview";
 
 type ClassificationContainerProps = {
 	stats: Stats;
+    whiteName: string;
+    blackName: string;
 };
 
-const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
+const ClassificationContainer = ({ stats, whiteName, blackName }: ClassificationContainerProps) => {
 	if (!stats) return;
 	return (
 		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary w-full space-y-2 rounded-3xl p-4">
 			<h1>Classifications</h1>
 			<hr className="my-2 rounded" />
 			<table className="w-full border-separate border-spacing-x-4 text-sm">
+                <thead>
+                    <tr className="w-full">
+                        <th></th>
+                        <th className="text-center">{whiteName}</th>
+                        <th></th>
+                        <th className="text-center">{blackName}</th>
+                    </tr>
+                </thead>
 				<tbody>
 					<tr style={{ color: getMoveColor("brilliant") }}>
 						<td>Brilliant</td>
-						<td>{stats.white.brilliant}</td>
+						<td className="text-center">{stats.white.brilliant}</td>
 						<td>
 							<img
 								src="/ChessIcons/brilliant.png"
@@ -23,11 +33,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.brilliant}</td>
+						<td className="text-center">{stats.black.brilliant}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("great") }}>
 						<td>Great</td>
-						<td>{stats.white.great}</td>
+						<td className="text-center">{stats.white.great}</td>
 						<td>
 							<img
 								src="/ChessIcons/great.png"
@@ -35,11 +45,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.great}</td>
+						<td className="text-center">{stats.black.great}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("best") }}>
 						<td>Best</td>
-						<td>{stats.white.best}</td>
+						<td className="text-center">{stats.white.best}</td>
 						<td>
 							<img
 								src="/ChessIcons/best.png"
@@ -47,11 +57,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.best}</td>
+						<td className="text-center">{stats.black.best}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("excellent") }}>
 						<td>Excellent</td>
-						<td>{stats.white.excellent}</td>
+						<td className="text-center">{stats.white.excellent}</td>
 						<td>
 							<img
 								src="/ChessIcons/excellent.png"
@@ -59,11 +69,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.excellent}</td>
+						<td className="text-center">{stats.black.excellent}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("good") }}>
 						<td>Good</td>
-						<td>{stats.white.good}</td>
+						<td className="text-center">{stats.white.good}</td>
 						<td>
 							<img
 								src="/ChessIcons/good.png"
@@ -71,11 +81,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.good}</td>
+						<td className="text-center">{stats.black.good}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("an inaccuracy") }}>
 						<td>Inaccuracy</td>
-						<td>{stats.white.inaccuracy}</td>
+						<td className="text-center">{stats.white.inaccuracy}</td>
 						<td>
 							<img
 								src="/ChessIcons/inaccuracy.png"
@@ -83,11 +93,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.inaccuracy}</td>
+						<td className="text-center">{stats.black.inaccuracy}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("a mistake") }}>
 						<td>Mistake</td>
-						<td>{stats.white.mistake}</td>
+						<td className="text-center">{stats.white.mistake}</td>
 						<td>
 							<img
 								src="/ChessIcons/mistake.png"
@@ -95,11 +105,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.mistake}</td>
+						<td className="text-center">{stats.black.mistake}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("a blunder") }}>
 						<td>Blunder</td>
-						<td>{stats.white.blunder}</td>
+						<td className="text-center">{stats.white.blunder}</td>
 						<td>
 							<img
 								src="/ChessIcons/blunder.png"
@@ -107,11 +117,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.blunder}</td>
+						<td className="text-center">{stats.black.blunder}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("a miss") }}>
 						<td>Miss</td>
-						<td>{stats.white.miss}</td>
+						<td className="text-center">{stats.white.miss}</td>
 						<td>
 							<img
 								src="/ChessIcons/miss.png"
@@ -119,11 +129,11 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.miss}</td>
+						<td className="text-center">{stats.black.miss}</td>
 					</tr>
 					<tr style={{ color: getMoveColor("theory") }}>
 						<td>Theory</td>
-						<td>{stats.white.theory}</td>
+						<td className="text-center">{stats.white.theory}</td>
 						<td>
 							<img
 								src="/ChessIcons/theory.png"
@@ -131,7 +141,7 @@ const ClassificationContainer = ({ stats }: ClassificationContainerProps) => {
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td>{stats.black.theory}</td>
+						<td className="text-center">{stats.black.theory}</td>
 					</tr>
 				</tbody>
 			</table>

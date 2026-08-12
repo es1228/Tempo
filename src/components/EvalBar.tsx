@@ -1,4 +1,4 @@
-import { calculateWinProbability } from "../utils/calculateWinProbability";
+import { calculateWinProbability } from "../utils/moveCalculations";
 
 type EvalBarProps = {
 	evaluation: string;

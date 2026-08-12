@@ -16,6 +16,7 @@ import useEvalCache from "../hooks/useEvalCache";
 import { getMoveColor } from "../utils/getMoveColor";
 import LinesContainer from "../components/LinesContainer";
 import ClassificationContainer from "../components/ClassificationContainer";
+import AccuracyContainer from "../components/AccuracyContainer";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -191,7 +192,8 @@ const ReviewPage = () => {
 							history={history}
 							goToMove={goToMove}
 						/>
-						<ClassificationContainer stats={stats!}/>
+						<AccuracyContainer stats={stats!}/>
+						<ClassificationContainer stats={stats!} whiteName={whitePlayer} blackName={blackPlayer}/>
 					</div>
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button

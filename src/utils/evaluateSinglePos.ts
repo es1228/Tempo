@@ -37,6 +37,7 @@ export const evaluateSinglePos = async (
 						parts[parts.indexOf("multipv") + 1],
 					);
 
+					const mate = parts[scoreIndex + 1] === "mate";
 					const score = Number(parts[scoreIndex + 2]);
 
 					// update pv
@@ -46,6 +47,7 @@ export const evaluateSinglePos = async (
 						pv[MultiPVIndex - 1] = {
 							moves: moveStr,
 							score: score,
+							mate: mate,
 						};
 					}
 

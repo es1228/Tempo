@@ -160,7 +160,7 @@ const useStockfish = ({
 		if (!stockfish) return;
 
 		// cache
-		const cached = getCachedEval(fen);
+		const cached = getCachedEval(fenRef.current);
 
 		if (cached?.bestMove && cached?.evaluation && cached?.pv) {
 			console.log(cached);
