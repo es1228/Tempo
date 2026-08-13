@@ -3,8 +3,10 @@ import { checkOpenings } from "./checkOpenings";
 import { convertEvaluation } from "./convertEvaluation";
 import type { PV } from "../types/PV";
 import { expectedPoints } from "./expectedPoints";
-import { detectMaterialSacrifice } from "./detectMaterialSacrifice";
-import { convertPGNToFENs } from "./convertPGNToFENs";
+import {
+	detectMaterialSacrifice,
+	PIECE_VALUES,
+} from "./detectMaterialSacrifice";
 
 type runClassificationProps = {
 	currStockfish: { evaluation: string };
@@ -50,7 +52,6 @@ export const runClassification = async ({
 
 	// get the last move
 	const history = chess.history();
-	const verboseHistory = chess.history({ verbose: true });
 	const movePlayed = history[history.length - 1];
 
 	// check if in checkmate
@@ -74,25 +75,50 @@ export const runClassification = async ({
 		const isOnlyGoodMove = pvDiff > 150;
 		const isNotAlreadyWinning = prevStockfish.pv[0].score < 400;
 
-		// brilliant moves
-		const gameAfterMove = new Chess(convertPGNToFENs(pgn).at(-1) ?? "");
+		// check if a move is not an obvious capture
+		const lastMove = chess.history({ verbose: true }).at(-1);
+		const capturedPiece = lastMove?.captured;
+		const capturingPiece = lastMove?.piece;
+		const defenders = chess.attackers(lastMove?.to!, colorTurn);
+		const isHangingPieceCapture = capturedPiece && defenders.length === 0;
 
-		const isSacrifice = detectMaterialSacrifice(
-			gameAfterMove,
-			verboseHistory.at(-1)?.to!,
-			colorTurn,
+		const isObviousCapture = Boolean(
+			(capturedPiece &&
+				capturingPiece &&
+				PIECE_VALUES[capturedPiece] >= PIECE_VALUES[capturingPiece]) ||
+			isHangingPieceCapture,
 		);
+
+		console.log(isObviousCapture);
+
+		// brilliant moves
+		const gameAfterMove = new Chess();
+		gameAfterMove.loadPgn(pgn);
+
+		const isSacrifice = detectMaterialSacrifice(gameAfterMove);
 		console.log(isSacrifice);
 
-		if (isSacrifice && movePlayed === prevStockfish.bestMove && isDrawnOrWinning) {
+		if (
+			isSacrifice &&
+			movePlayed === prevStockfish.bestMove &&
+			isDrawnOrWinning
+		) {
 			return { classification: "brilliant" };
 		}
+
+		console.log(pvDiff);
+		console.log(isbetterMovePlayed);
+		console.log(isOnlyGoodMove);
+		console.log(isNotAlreadyWinning);
+		console.log(isDrawnOrWinning);
+		console.log(!isObviousCapture);
 
 		const isGreat =
 			isbetterMovePlayed &&
 			isOnlyGoodMove &&
 			isNotAlreadyWinning &&
-			isDrawnOrWinning;
+			isDrawnOrWinning &&
+			!isObviousCapture
 
 		if (isGreat) {
 			return { classification: "great" };

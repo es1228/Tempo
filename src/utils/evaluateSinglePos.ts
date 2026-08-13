@@ -104,6 +104,7 @@ export const evaluateSinglePos = async (
 		// send message to evaluate
 		stockfish.postMessage("uci");
 		stockfish.postMessage("isready");
+		//stockfish.postMessage(`setoption name Threads value ${navigator.hardwareConcurrency ?? 4}`)
 		stockfish.postMessage(`setoption name MultiPV value ${lines}`);
 		stockfish.postMessage(`position fen ${fen}`);
 		stockfish.postMessage(`go depth ${depth}`);

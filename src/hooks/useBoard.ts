@@ -69,6 +69,7 @@ const useBoard = ({
 		skill: engineStrength,
 		getCachedEval,
 		setCachedEval,
+		isInUse: isPlayingAgainstEngine,
 	});
 
 	// detect promotion move

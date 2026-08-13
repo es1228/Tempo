@@ -17,6 +17,7 @@ type useStockfishProps = {
 		bestMove: string,
 		pv: PV[],
 	) => void;
+	isInUse?: boolean,
 };
 
 const useStockfish = ({
@@ -26,6 +27,7 @@ const useStockfish = ({
 	skill,
 	getCachedEval,
 	setCachedEval,
+	isInUse,
 }: useStockfishProps) => {
 	// data
 	const [bestMove, setBestMove] = useState<string>("");
@@ -157,7 +159,7 @@ const useStockfish = ({
 	useEffect(() => {
 		// create stockfish
 		const stockfish = stockfishRef.current;
-		if (!stockfish) return;
+		if (!stockfish || isInUse === false) return;
 
 		// cache
 		const cached = getCachedEval(fenRef.current);
