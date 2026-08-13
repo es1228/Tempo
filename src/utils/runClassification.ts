@@ -84,7 +84,7 @@ export const runClassification = async ({
 		);
 		console.log(isSacrifice);
 
-		if (isSacrifice && movePlayed === prevStockfish.bestMove) {
+		if (isSacrifice && movePlayed === prevStockfish.bestMove && isDrawnOrWinning) {
 			return { classification: "brilliant" };
 		}
 

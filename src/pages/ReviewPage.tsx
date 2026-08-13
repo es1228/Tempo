@@ -58,6 +58,8 @@ const ReviewPage = () => {
 		console.log(result);
 	};
 
+	const [panel, setPanel] = useState<"Report" | "Analysis">("Analysis");
+
 	return (
 		<>
 			<ImportDialog
@@ -174,31 +176,62 @@ const ReviewPage = () => {
 								isSecondary
 							/>
 						</div>
-						<MoveFeedbackContainer
-							feedback={`${
-								lastMove && `${lastMove} is ${classification}`
-							}`}
-							best={
-								prevBestMove &&
-								classification !== "best" &&
-								classification !== "great" &&
-								classification !== "theory"
-									? `The Best Move was ${prevBestMove}`
-									: ""
-							}
-							opening={`${opening && `${opening}`}`}
-						/>
-						<LinesContainer chessPosition={chessPosition} pv={pv} />
-						<HistoryContainer
-							history={history}
-							goToMove={goToMove}
-						/>
-						<AccuracyContainer stats={stats!} />
-						<ClassificationContainer
-							stats={stats!}
-							whiteName={whitePlayer}
-							blackName={blackPlayer}
-						/>
+						<div className="flex items-center justify-between bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-2">
+							<Button
+								onClick={() => setPanel("Analysis")}
+								text="Analysis"
+								icon="search"
+								isPrimary={panel === "Analysis"}
+								isSecondary={panel !== "Analysis"}
+							/>
+							<div className="h-8 bg-text dark:bg-text-dark w-0.5 rounded-3xl"></div>
+							<Button
+								onClick={() => setPanel("Report")}
+								text="Report"
+								icon="description"
+								isPrimary={panel === "Report"}
+								isSecondary={panel !== "Report"}
+							/>
+						</div>
+						{panel === "Analysis" && (
+							<>
+								<MoveFeedbackContainer
+									feedback={`${
+										lastMove &&
+										`${lastMove} is ${classification}`
+									}`}
+									best={
+										prevBestMove &&
+										classification !== "best" &&
+										classification !== "great" &&
+										classification !== "brilliant" &&
+										classification !== "forced" &&
+										classification !== "theory"
+											? `The Best Move was ${prevBestMove}`
+											: ""
+									}
+									opening={`${opening && `${opening}`}`}
+								/>
+								<LinesContainer
+									chessPosition={chessPosition}
+									pv={pv}
+								/>
+								<HistoryContainer
+									history={history}
+									goToMove={goToMove}
+								/>
+							</>
+						)}
+						{panel === "Report" && (
+							<>
+								<AccuracyContainer stats={stats!} />
+								<ClassificationContainer
+									stats={stats!}
+									whiteName={whitePlayer}
+									blackName={blackPlayer}
+								/>
+							</>
+						)}
 					</div>
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
