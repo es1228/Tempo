@@ -33,6 +33,11 @@ export type Stats = {
 		miss: number;
 		theory: number;
 	};
+	evaluations: string[];
+	reviewedMoves: Array<{
+		san: string,
+		classification: string,
+	}>
 };
 
 export const runGameReview = async (
@@ -81,7 +86,11 @@ export const runGameReview = async (
 			miss: 0,
 			theory: 0,
 		},
+		evaluations: [],
+		reviewedMoves: [],
 	};
+
+	let evaluations = []
 
 	// cache the game
 	for (const fen of fens) {
@@ -96,8 +105,11 @@ export const runGameReview = async (
 				evalResult.bestMove,
 				evalResult.pv,
 			);
+			evaluations.push(evalResult.evaluation)
 		}
 	}
+
+	stats.evaluations = evaluations;
 
 	let accuracyWhite = 0;
 	let accuracyBlack = 0;
@@ -147,6 +159,11 @@ export const runGameReview = async (
 			prevStockfish,
 			prev2Stockfish,
 		});
+
+		stats.reviewedMoves.push({
+			san: move.san,
+			classification: result.classification,
+		})
 
 		// classify
 		const classification = result.classification;

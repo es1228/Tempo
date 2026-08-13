@@ -64,7 +64,7 @@ const useBoard = ({
 
 	const { bestMove } = useStockfish({
 		fen: chessGame.fen(),
-		depth: 20,
+		depth: 16,
 		lines: 1,
 		skill: engineStrength,
 		getCachedEval,

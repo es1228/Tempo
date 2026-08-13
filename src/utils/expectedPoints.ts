@@ -13,7 +13,7 @@ export const expectedPoints = (
 
 	// expected points model
 	const exP = (evaluation: number) =>
-		1 / (1 + Math.pow(Math.E, -0.4 * evaluation));
+		1 / (1 + Math.exp(-0.4 * evaluation));
 
 	// calculate points drop
 	const pointsDrop = +(exP(evaluation2) - exP(evaluation1)).toFixed(2);

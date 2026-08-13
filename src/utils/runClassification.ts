@@ -3,6 +3,8 @@ import { checkOpenings } from "./checkOpenings";
 import { convertEvaluation } from "./convertEvaluation";
 import type { PV } from "../types/PV";
 import { expectedPoints } from "./expectedPoints";
+import { detectMaterialSacrifice } from "./detectMaterialSacrifice";
+import { convertPGNToFENs } from "./convertPGNToFENs";
 
 type runClassificationProps = {
 	currStockfish: { evaluation: string };
@@ -10,17 +12,25 @@ type runClassificationProps = {
 	prev2Stockfish: { evaluation: string };
 	pgn: string;
 };
-export const runClassification = async ({pgn, currStockfish, prevStockfish, prev2Stockfish}: runClassificationProps) => {
+export const runClassification = async ({
+	pgn,
+	currStockfish,
+	prevStockfish,
+	prev2Stockfish,
+}: runClassificationProps) => {
 	// theory
 
 	// load the previous position
 	const chess = new Chess();
 	chess.loadPgn(pgn);
 
+	const colorTurn = chess.turn();
+	const opponentColor = colorTurn === "b" ? "w" : "b";
+
 	// classify as theory if the fen matches an openings database
 	const opening = await checkOpenings(chess.fen());
 	if (opening) {
-		return {classification: "theory", opening}
+		return { classification: "theory", opening };
 	}
 
 	// forced moves
@@ -31,7 +41,7 @@ export const runClassification = async ({pgn, currStockfish, prevStockfish, prev
 		const moves = chess.moves().length;
 		chess.move(lastMove);
 		if (moves === 1) {
-			return {classification: "forced"}
+			return { classification: "forced" };
 		}
 	}
 
@@ -40,15 +50,17 @@ export const runClassification = async ({pgn, currStockfish, prevStockfish, prev
 
 	// get the last move
 	const history = chess.history();
+	const verboseHistory = chess.history({ verbose: true });
 	const movePlayed = history[history.length - 1];
 
 	// check if in checkmate
 	if (chess.isCheckmate()) {
-		return {classification: "best"}
+		return { classification: "best" };
 	}
 
 	if (prevStockfish.pv.length > 0) {
-		// great moves
+		// brilliant and great moves
+
 		const isbetterMovePlayed =
 			movePlayed && movePlayed === prevStockfish.bestMove;
 
@@ -62,25 +74,37 @@ export const runClassification = async ({pgn, currStockfish, prevStockfish, prev
 		const isOnlyGoodMove = pvDiff > 150;
 		const isNotAlreadyWinning = prevStockfish.pv[0].score < 400;
 
-		if (
+		// brilliant moves
+		const gameAfterMove = new Chess(convertPGNToFENs(pgn).at(-1) ?? "");
+
+		const isSacrifice = detectMaterialSacrifice(
+			gameAfterMove,
+			verboseHistory.at(-1)?.to!,
+			colorTurn,
+		);
+		console.log(isSacrifice);
+
+		if (isSacrifice && movePlayed === prevStockfish.bestMove) {
+			return { classification: "brilliant" };
+		}
+
+		const isGreat =
 			isbetterMovePlayed &&
 			isOnlyGoodMove &&
 			isNotAlreadyWinning &&
-			isDrawnOrWinning
-		) {
-			return {classification: "great"}
+			isDrawnOrWinning;
+
+		if (isGreat) {
+			return { classification: "great" };
 		}
 	}
 
 	// best moves
 	if (movePlayed === prevStockfish.bestMove) {
-		return {classification: "best"}
+		return { classification: "best" };
 	}
 
 	// other classifications using expected points model
-	const colorTurn = chess.turn();
-	const opponentColor = colorTurn === "b" ? "w" : "b";
-
 	const classification1 = expectedPoints(
 		convertEvaluation(prevStockfish.evaluation),
 		convertEvaluation(currStockfish.evaluation),
@@ -97,6 +121,6 @@ export const runClassification = async ({pgn, currStockfish, prevStockfish, prev
 		(classification1 === "a blunder" || classification1 === "a mistake") &&
 		(classification2 === "a blunder" || classification2 === "a mistake")
 	)
-		return {classification: "a miss"}
-	else return {classification: classification1}
+		return { classification: "a miss" };
+	else return { classification: classification1 };
 };

@@ -183,12 +183,15 @@ const useStockfish = ({
 		stockfish.postMessage("ucinewgame");
 
 		// send message to evaluate
+		stockfish.postMessage("setoption name Threads value 4");
+		stockfish.postMessage("setoption name Hash value 256");
+		stockfish.postMessage("setoption name Use NNUE value true")
 		stockfish.postMessage(`setoption name MultiPV value ${lines}`);
 		stockfish.postMessage(
 			`setoption name Skill Level value ${skill ?? 20}`,
 		);
 		stockfish.postMessage(`position fen ${fen}`);
-		stockfish.postMessage(`go depth ${depth}`);
+		stockfish.postMessage(`go depth ${depth} 1000`);
 
 		// cleanup
 		return () => {
