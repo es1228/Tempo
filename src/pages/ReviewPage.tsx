@@ -2,7 +2,13 @@ import { Chessboard } from "react-chessboard";
 import EvalBar from "../components/EvalBar";
 import Button from "../components/Button";
 import useBoard from "../hooks/useBoard";
-import { useState, type CSSProperties } from "react";
+import {
+	useCallback,
+	useMemo,
+	useState,
+	type CSSProperties,
+	type ReactNode,
+} from "react";
 import useClassify from "../hooks/useClassify";
 import ImportDialog from "../components/ImportDialog";
 import PlayerContainer from "../components/PlayerContainer";
@@ -60,6 +66,50 @@ const ReviewPage = () => {
 
 	const [panel, setPanel] = useState<"Report" | "Analysis">("Analysis");
 
+	const memoizedSquareRenderer = useCallback(
+		({ square, children }: { square: string; children?: ReactNode }) => {
+			const moveClass = classification.split(" ").at(-1) ?? "Loading";
+			const squareStyle = options.squareStyles?.[square] ?? {};
+			const moveColor = getMoveColor(classification);
+			const startSquare = history?.at(currentMove)?.from;
+			const endSquare = history?.at(currentMove)?.to;
+			const highlightStyle: CSSProperties =
+				currentMove >= 0 &&
+				(square === startSquare || square === endSquare)
+					? {
+							backgroundColor: `color-mix(in oklch, ${moveColor} 40%, transparent)`,
+						}
+					: {};
+
+			return (
+				<div
+					className="relative z-100 h-full w-full overflow-visible"
+					style={{
+						...squareStyle,
+						...highlightStyle,
+					}}
+				>
+					{children}
+					{currentMove >= 0 && square === endSquare && (
+						<img
+							src={`/ChessIcons/${moveClass}.png`}
+							alt={classification}
+							className="pointer-events-none absolute -top-3 -right-3 z-100 h-6 w-6 overflow-visible md:-top-4 md:-right-4 md:h-8 md:w-8"
+						/>
+					)}
+				</div>
+			);
+		},
+		[classification, options.squareStyles, history, currentMove],
+	);
+
+	const memoizedOptions = useMemo(() => {
+		return {
+			...options,
+			squareRenderer: memoizedSquareRenderer
+		}
+	}, [options, memoizedSquareRenderer])
+
 	return (
 		<>
 			<ImportDialog
@@ -91,51 +141,7 @@ const ReviewPage = () => {
 						)}
 						<div className="w-auto md:w-120">
 							<Chessboard
-								options={{
-									...options,
-									squareRenderer: ({ square, children }) => {
-										const moveClass =
-											classification.split(" ").at(-1) ??
-											"Loading";
-										const squareStyle =
-											options.squareStyles?.[square] ??
-											{};
-										const moveColor =
-											getMoveColor(classification);
-										const startSquare =
-											history?.at(currentMove)?.from;
-										const endSquare =
-											history?.at(currentMove)?.to;
-										const highlightStyle: CSSProperties =
-											currentMove >= 0 &&
-											(square === startSquare ||
-												square === endSquare)
-												? {
-														backgroundColor: `color-mix(in oklch, ${moveColor} 40%, transparent)`,
-													}
-												: {};
-
-										return (
-											<div
-												className="relative z-100 h-full w-full overflow-visible"
-												style={{
-													...squareStyle,
-													...highlightStyle,
-												}}
-											>
-												{children}
-												{currentMove >= 0 &&
-													square === endSquare && (
-														<img
-															src={`/ChessIcons/${moveClass}.png`}
-															alt={classification}
-															className="pointer-events-none absolute -top-3 -right-3 z-100 h-6 w-6 overflow-visible md:-top-4 md:-right-4 md:h-8 md:w-8"
-														/>
-													)}
-											</div>
-										);
-									},
-								}}
+								options={memoizedOptions}
 							/>
 							<PromotionDialog
 								isDialogOpen={!!promotionMove}
@@ -176,7 +182,7 @@ const ReviewPage = () => {
 								isSecondary
 							/>
 						</div>
-						<div className="flex items-center justify-between bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-2">
+						<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary flex items-center justify-between rounded-3xl p-2">
 							<Button
 								onClick={() => setPanel("Analysis")}
 								text="Analysis"
@@ -184,7 +190,7 @@ const ReviewPage = () => {
 								isPrimary={panel === "Analysis"}
 								isSecondary={panel !== "Analysis"}
 							/>
-							<div className="h-8 bg-text dark:bg-text-dark w-0.5 rounded-3xl"></div>
+							<div className="bg-text dark:bg-text-dark h-8 w-0.5 rounded-3xl"></div>
 							<Button
 								onClick={() => setPanel("Report")}
 								text="Report"
@@ -225,6 +231,7 @@ const ReviewPage = () => {
 						{panel === "Report" && (
 							<>
 								<AccuracyContainer stats={stats!} />
+								<GameChart stats={stats!} />
 								<ClassificationContainer
 									stats={stats!}
 									whiteName={whitePlayer}

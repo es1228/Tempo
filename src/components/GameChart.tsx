@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import { calculateWinProbability } from "../utils/moveCalculations";
 import type { Stats } from "../utils/runGameReview";
+import { useMemo } from "react";
 
 type GameChartProps = {
 	stats: Stats;
@@ -23,27 +24,34 @@ const GameChart = ({ stats }: GameChartProps) => {
 	if (!stats || !stats.evaluations || stats.evaluations.length === 0)
 		return null;
 
-	const data: ChartDataPoint[] = stats.evaluations.map(
-		(evaluation, index) => {
+	console.log(stats);
+
+	const data: ChartDataPoint[] = useMemo(() => {
+		return stats.evaluations.map((evaluation, index) => {
 			let winProbability = 50;
+			let validEval = "+0.0";
 			try {
-				const validEval = !evaluation || typeof evaluation !== "string" ? "+0.0" : evaluation;
+				validEval =
+					!evaluation || typeof evaluation !== "string"
+						? "+0.0"
+						: evaluation;
 				const calculated = calculateWinProbability(validEval) * 100;
-				winProbability = isNaN(calculated) ? 50 : calculated;
-			}
-			catch {
-				console.error("Could not parse chart evaluation")
+				winProbability = isNaN(calculated)
+					? 50
+					: Math.max(0, Math.min(100, Number(calculated.toFixed(2))));
+			} catch {
+				console.error("Could not parse chart evaluation");
 			}
 
 			return {
 				winProbability,
 				moveNumber: index,
-				evaluation: evaluation ?? "+0.0",
+				evaluation: validEval,
 			};
-		},
-	);
+		});
+	}, [stats]);
 	return (
-		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary overflow-auto h-20 w-full rounded">
+		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary h-20 w-full overflow-hidden rounded">
 			<ResponsiveContainer width="100%" height="100%">
 				<AreaChart
 					data={data}
@@ -58,9 +66,9 @@ const GameChart = ({ stats }: GameChartProps) => {
 						fillOpacity={1}
 						stroke="white"
 						type="monotone"
-						isAnimationActive={false}
 					/>
 					<Tooltip
+						isAnimationActive={false}
 						content={({ active, payload }) => {
 							if (active && payload && payload.length) {
 								const tooltipData = payload[0]
