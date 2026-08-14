@@ -11,23 +11,26 @@ import { calculateWinProbability } from "../utils/moveCalculations";
 import type { Stats } from "../utils/runGameReview";
 import { useMemo, useState } from "react";
 import { getMoveColor } from "../utils/getMoveColor";
+import type { MoveNode } from "../types/HistoryTree";
+import { getMainlineNodes } from "../utils/getMainlineNodes";
 
 type GameChartProps = {
 	stats: Stats;
-	goToMove: (moveNumber: number) => void;
-	currentMoveNumber: number;
+	rootNode: MoveNode;
+	goToNode: (node: MoveNode) => void;
+	currentNode: MoveNode;
 };
 
 type ChartDataPoint = {
-	moveNumber: number;
+	node: MoveNode;
 	winProbability: number;
 	evaluation: string;
 	classification: string;
 };
 
-const CustomDot = ({ cx, cy, payload, currentMoveNumber }: any) => {
+const CustomDot = ({ cx, cy, payload, node }: any) => {
 	const classification: string = payload.classification;
-	const isCurrentMove = payload.moveNumber === currentMoveNumber;
+	const isCurrentMove = payload.node === node;
 
 	if (!classification) return null;
 
@@ -59,7 +62,7 @@ const CustomDot = ({ cx, cy, payload, currentMoveNumber }: any) => {
 	);
 };
 
-const ActiveDot = ({ cx, cy, payload, goToMove }: any) => {
+const ActiveDot = ({ cx, cy, payload, goToNode }: any) => {
 	const classification: string = payload.classification;
 
 	if (!classification) return null;
@@ -76,18 +79,19 @@ const ActiveDot = ({ cx, cy, payload, goToMove }: any) => {
 			fill={dotColor}
 			onClick={(e) => {
 				e.stopPropagation();
-				goToMove(payload.moveNumber);
+				goToNode(payload.node);
 			}}
 			className="focus:outline-hidden"
 		/>
 	);
 };
 
-const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
+const GameChart = ({ stats, goToNode, rootNode, currentNode }: GameChartProps) => {
 	if (!stats || !stats.evaluations || stats.evaluations.length === 0)
 		return null;
 
 	const [activeIndex, setActiveIndex] = useState<number | null>(null);
+	const mainlineNodes = getMainlineNodes(rootNode)
 
 	const data: ChartDataPoint[] = useMemo(() => {
 		return stats.evaluations.map((evaluation, index) => {
@@ -114,7 +118,7 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 
 			return {
 				winProbability,
-				moveNumber: index - 1,
+				node: mainlineNodes[index],
 				evaluation: validEval,
 				classification,
 			};
@@ -134,7 +138,7 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 					onMouseLeave={() => setActiveIndex(null)}
 					onClick={() => {
 						if (activeIndex !== null && data[activeIndex])
-							goToMove(data[activeIndex].moveNumber);
+							goToNode(data[activeIndex].node);
 					}}
 				>
 					<XAxis hide dataKey={"moveNumber"} />
@@ -146,17 +150,17 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 						strokeOpacity={0.5}
 					/>
 					<ReferenceLine
-						x={currentMoveNumber}
+						x={mainlineNodes.indexOf(currentNode) + 1}
 						stroke={
-							currentMoveNumber === -1
+							currentNode.parent === null
 								? getMoveColor("theory")
 								: getMoveColor(
 										stats.reviewedMoves
-											.at(currentMoveNumber)
+											.at(mainlineNodes.indexOf(currentNode) + 1)
 											?.classification.split(" ")
 											.at(1) ??
 											stats.reviewedMoves.at(
-												currentMoveNumber,
+												mainlineNodes.indexOf(currentNode) + 1,
 											)?.classification ??
 											"Loading",
 									)
@@ -170,9 +174,9 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 						stroke="white"
 						type="monotone"
 						dot={
-							<CustomDot currentMoveNumber={currentMoveNumber} />
+							<CustomDot node={currentNode} />
 						}
-						activeDot={<ActiveDot goToMove={goToMove} />}
+						activeDot={<ActiveDot goToNode={goToNode} />}
 					/>
 					<Tooltip
 						isAnimationActive={false}
@@ -180,25 +184,25 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 							if (active && payload && payload.length) {
 								const tooltipData = payload[0]
 									.payload as ChartDataPoint;
-									
+
 								const shortClassification = stats.reviewedMoves
-									?.at(tooltipData.moveNumber)
+									?.at(mainlineNodes.indexOf(tooltipData.node) + 1)
 									?.classification?.includes(" ")
 									? stats.reviewedMoves
-											?.at(tooltipData.moveNumber)
+											?.at(mainlineNodes.indexOf(tooltipData.node) + 1)
 											?.classification.split(" ")[1]
 									: stats.reviewedMoves?.at(
-											tooltipData.moveNumber,
+											mainlineNodes.indexOf(tooltipData.node) + 1,
 										)?.classification;
 
 								return (
 									<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-2">
 										<div className="flex items-center gap-2">
 											<img
-												src={`/ChessIcons/${tooltipData.moveNumber === -1 ? "theory" : shortClassification}.png`}
+												src={`/ChessIcons/${tooltipData.node.parent === null ? "theory" : shortClassification}.png`}
 												alt={
 													stats.reviewedMoves?.at(
-														tooltipData.moveNumber,
+														mainlineNodes.indexOf(tooltipData.node) + 1,
 													)?.classification
 												}
 												className="h-6 w-6"
@@ -206,10 +210,10 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 											<p>{tooltipData.evaluation}</p>
 										</div>
 										<p>
-											{tooltipData.moveNumber === -1
+											{tooltipData.node.parent === null
 												? "Start"
 												: stats.reviewedMoves?.at(
-														tooltipData.moveNumber,
+														mainlineNodes.indexOf(tooltipData.node) + 1
 													)?.san}
 										</p>
 									</div>

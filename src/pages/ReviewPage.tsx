@@ -34,9 +34,9 @@ const ReviewPage = () => {
 		chessPosition,
 		chessPGN,
 		setChessPGN,
-		history,
-		goToMove,
-		currentMove,
+		goToNode,
+		currentNode,
+		rootNode,
 		lastMove,
 		promotionMove,
 		onPromotionPieceSelect,
@@ -59,12 +59,12 @@ const ReviewPage = () => {
 		if (!data) return;
 		setChessPGN(data);
 		setIsDialogOpen(false);
-		alert("Game Review Starting")
+		alert("Game Review Starting");
 		const startTime = performance.now();
 		const result = await runGameReview(data, getCachedEval, setCachedEval);
 		const endTime = performance.now();
-		const duration = endTime - startTime
-		alert(`Game Review Completed in ${duration.toFixed(2)} ms`)
+		const duration = endTime - startTime;
+		alert(`Game Review Completed in ${duration.toFixed(2)} ms`);
 		setStats(result);
 		console.log(result);
 	};
@@ -76,10 +76,12 @@ const ReviewPage = () => {
 			const moveClass = classification.split(" ").at(-1) ?? "Loading";
 			const squareStyle = options.squareStyles?.[square] ?? {};
 			const moveColor = getMoveColor(classification);
-			const startSquare = history?.at(currentMove)?.from;
-			const endSquare = history?.at(currentMove)?.to;
+			const startSquare = currentNode.move?.from;
+			const endSquare = currentNode.move?.to;
+			const isNotRoot = currentNode.parent !== null;
+
 			const highlightStyle: CSSProperties =
-				currentMove >= 0 &&
+				isNotRoot &&
 				(square === startSquare || square === endSquare)
 					? {
 							backgroundColor: `color-mix(in oklch, ${moveColor} 40%, transparent)`,
@@ -95,7 +97,7 @@ const ReviewPage = () => {
 					}}
 				>
 					{children}
-					{currentMove >= 0 && square === endSquare && (
+					{isNotRoot && square === endSquare && (
 						<img
 							src={`/ChessIcons/${moveClass}.png`}
 							alt={classification}
@@ -105,7 +107,7 @@ const ReviewPage = () => {
 				</div>
 			);
 		},
-		[classification, options.squareStyles, history, currentMove],
+		[classification, options.squareStyles, currentNode],
 	);
 
 	const memoizedOptions = useMemo(() => {
@@ -226,16 +228,21 @@ const ReviewPage = () => {
 									pv={pv}
 								/>
 								<HistoryContainer
-									history={history}
-									currentMove={currentMove}
-									goToMove={goToMove}
+									rootNode={rootNode}
+									currentNode={currentNode}
+									goToNode={goToNode}
 									stats={stats!}
 								/>
 							</>
 						)}
 						{panel === "Report" && (
 							<>
-								<GameChart stats={stats!} goToMove={goToMove} currentMoveNumber={currentMove}/>
+								<GameChart
+									stats={stats!}
+									goToNode={goToNode}
+									rootNode={rootNode}
+									currentNode={currentNode}
+								/>
 								<AccuracyContainer stats={stats!} />
 								<ClassificationContainer
 									stats={stats!}
@@ -248,11 +255,14 @@ const ReviewPage = () => {
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
 							icon="first_page"
-							onClick={() => goToMove(-1)}
+							onClick={() => goToNode(rootNode)}
 						/>
 						<Button
 							icon="arrow_back"
-							onClick={() => goToMove(currentMove - 1)}
+							onClick={() =>
+								currentNode.parent &&
+								goToNode(currentNode.parent)
+							}
 						/>
 						<Button
 							icon="cached"
@@ -260,11 +270,20 @@ const ReviewPage = () => {
 						/>
 						<Button
 							icon="arrow_forward"
-							onClick={() => goToMove(currentMove + 1)}
+							onClick={() =>
+								currentNode.children.length > 0 &&
+								goToNode(currentNode.children[0])
+							}
 						/>
 						<Button
 							icon="last_page"
-							onClick={() => goToMove(history.length - 1)}
+							onClick={() => {
+								let curr = rootNode;
+
+								while (curr.children.length > 0)
+									curr = curr.children[0];
+								goToNode(curr);
+							}}
 						/>
 					</div>
 				</div>
