@@ -59,7 +59,12 @@ const ReviewPage = () => {
 		if (!data) return;
 		setChessPGN(data);
 		setIsDialogOpen(false);
+		alert("Game Review Starting")
+		const startTime = performance.now();
 		const result = await runGameReview(data, getCachedEval, setCachedEval);
+		const endTime = performance.now();
+		const duration = endTime - startTime
+		alert(`Game Review Completed in ${duration.toFixed(2)} ms`)
 		setStats(result);
 		console.log(result);
 	};
@@ -222,7 +227,9 @@ const ReviewPage = () => {
 								/>
 								<HistoryContainer
 									history={history}
+									currentMove={currentMove}
 									goToMove={goToMove}
+									stats={stats!}
 								/>
 							</>
 						)}

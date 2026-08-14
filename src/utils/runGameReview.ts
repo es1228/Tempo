@@ -103,12 +103,14 @@ export const runGameReview = async (
 	let accuracyWhite = 0;
 	let accuracyBlack = 0;
 
+	const subChess = new Chess();
+
 	// get stats
 	for (let i = 0; i < history.length; i++) {
 		const move = history[i];
-		const subChess = new Chess();
 
-		for (let j = 0; j <= i; j++) subChess.move(history[j]);
+		const currentFen = fens.at(i + 1) ?? chess.fen();
+		subChess.load(currentFen);
 
 		const pgn = subChess.pgn();
 		const fenAtCurr = fens

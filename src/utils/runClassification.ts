@@ -66,14 +66,14 @@ export const runClassification = async ({
 			movePlayed && movePlayed === prevStockfish.bestMove;
 
 		// check if the move is not losing
-		const isDrawnOrWinning = prevStockfish.pv[0].score > -500;
+		const isDrawnOrWinning = prevStockfish.pv.at(0)?.score ?? -1000 > -500;
 
 		// calculate difference between top 2 moves
-		const pvDiff = prevStockfish.pv[0].score - prevStockfish.pv[1].score;
+		const pvDiff = (prevStockfish.pv.at(0)?.score ?? 0) - (prevStockfish.pv.at(1)?.score ?? 0);
 
 		// only good move + not already winning
 		const isOnlyGoodMove = pvDiff > 150;
-		const isNotAlreadyWinning = prevStockfish.pv[0].score < 400;
+		const isNotAlreadyWinning = prevStockfish.pv.at(0)?.score ?? 1000 < 400;
 
 		// check if a move is not an obvious capture
 		const lastMove = chess.history({ verbose: true }).at(-1);
@@ -89,14 +89,11 @@ export const runClassification = async ({
 			isHangingPieceCapture,
 		);
 
-		console.log(isObviousCapture);
-
 		// brilliant moves
 		const gameAfterMove = new Chess();
 		gameAfterMove.loadPgn(pgn);
 
 		const isSacrifice = detectMaterialSacrifice(gameAfterMove);
-		console.log(isSacrifice);
 
 		if (
 			isSacrifice &&

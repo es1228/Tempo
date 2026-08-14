@@ -107,7 +107,10 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 			}
 
 			const classification =
-				index === 0 ? "Start" : stats.reviewedMoves?.at(index - 1)?.classification ?? "Unknown";
+				index === 0
+					? "theory"
+					: (stats.reviewedMoves?.at(index - 1)?.classification ??
+						"Unknown");
 
 			return {
 				winProbability,
@@ -144,15 +147,20 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 					/>
 					<ReferenceLine
 						x={currentMoveNumber}
-						stroke={getMoveColor(
-							stats.reviewedMoves
-								.at(currentMoveNumber)
-								?.classification.split(" ")
-								.at(1) ??
-								stats.reviewedMoves.at(currentMoveNumber)
-									?.classification ??
-								"Loading",
-						)}
+						stroke={
+							currentMoveNumber === -1
+								? getMoveColor("theory")
+								: getMoveColor(
+										stats.reviewedMoves
+											.at(currentMoveNumber)
+											?.classification.split(" ")
+											.at(1) ??
+											stats.reviewedMoves.at(
+												currentMoveNumber,
+											)?.classification ??
+											"Loading",
+									)
+						}
 						strokeWidth={2}
 					/>
 					<Area
@@ -172,11 +180,22 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 							if (active && payload && payload.length) {
 								const tooltipData = payload[0]
 									.payload as ChartDataPoint;
+									
+								const shortClassification = stats.reviewedMoves
+									?.at(tooltipData.moveNumber)
+									?.classification?.includes(" ")
+									? stats.reviewedMoves
+											?.at(tooltipData.moveNumber)
+											?.classification.split(" ")[1]
+									: stats.reviewedMoves?.at(
+											tooltipData.moveNumber,
+										)?.classification;
+
 								return (
 									<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-2">
 										<div className="flex items-center gap-2">
 											<img
-												src={`/ChessIcons/${stats.reviewedMoves?.at(tooltipData.moveNumber)?.classification?.includes(" ") ? stats.reviewedMoves?.at(tooltipData.moveNumber)?.classification.split(" ")[1] : stats.reviewedMoves?.at(tooltipData.moveNumber)?.classification}.png`}
+												src={`/ChessIcons/${tooltipData.moveNumber === -1 ? "theory" : shortClassification}.png`}
 												alt={
 													stats.reviewedMoves?.at(
 														tooltipData.moveNumber,
@@ -187,11 +206,11 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 											<p>{tooltipData.evaluation}</p>
 										</div>
 										<p>
-											{
-												stats.reviewedMoves?.at(
-													tooltipData.moveNumber,
-												)?.san
-											}
+											{tooltipData.moveNumber === -1
+												? "Start"
+												: stats.reviewedMoves?.at(
+														tooltipData.moveNumber,
+													)?.san}
 										</p>
 									</div>
 								);

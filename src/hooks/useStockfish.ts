@@ -68,7 +68,7 @@ const useStockfish = ({
 
 		// listen for message
 		stockfish.onmessage = (event) => {
-			console.log(event.data);
+			//console.log(event.data);
 			setIsThinking(true);
 
 			// extract evaluation
