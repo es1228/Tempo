@@ -1,6 +1,7 @@
 import {
 	Area,
 	AreaChart,
+	ReferenceLine,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -8,23 +9,85 @@ import {
 } from "recharts";
 import { calculateWinProbability } from "../utils/moveCalculations";
 import type { Stats } from "../utils/runGameReview";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { getMoveColor } from "../utils/getMoveColor";
 
 type GameChartProps = {
 	stats: Stats;
+	goToMove: (moveNumber: number) => void;
+	currentMoveNumber: number;
 };
 
 type ChartDataPoint = {
 	moveNumber: number;
 	winProbability: number;
 	evaluation: string;
+	classification: string;
 };
 
-const GameChart = ({ stats }: GameChartProps) => {
+const CustomDot = ({ cx, cy, payload, currentMoveNumber }: any) => {
+	const classification: string = payload.classification;
+	const isCurrentMove = payload.moveNumber === currentMoveNumber;
+
+	if (!classification) return null;
+
+	const targetClassifications = [
+		"brilliant",
+		"great",
+		"a mistake",
+		"a blunder",
+		"a miss",
+	];
+	const shouldShow = targetClassifications.some((target) =>
+		classification.includes(target),
+	);
+
+	if (!shouldShow && !isCurrentMove) return null;
+
+	const dotColor = getMoveColor(
+		classification.split(" ").at(1) ?? classification,
+	);
+
+	return (
+		<circle
+			cx={cx}
+			cy={cy}
+			r={4}
+			fill={dotColor}
+			className="focus:outline-hidden"
+		/>
+	);
+};
+
+const ActiveDot = ({ cx, cy, payload, goToMove }: any) => {
+	const classification: string = payload.classification;
+
+	if (!classification) return null;
+
+	const dotColor = getMoveColor(
+		classification.split(" ").at(1) ?? classification,
+	);
+
+	return (
+		<circle
+			cx={cx}
+			cy={cy}
+			r={4}
+			fill={dotColor}
+			onClick={(e) => {
+				e.stopPropagation();
+				goToMove(payload.moveNumber);
+			}}
+			className="focus:outline-hidden"
+		/>
+	);
+};
+
+const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 	if (!stats || !stats.evaluations || stats.evaluations.length === 0)
 		return null;
 
-	console.log(stats);
+	const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
 	const data: ChartDataPoint[] = useMemo(() => {
 		return stats.evaluations.map((evaluation, index) => {
@@ -43,29 +106,65 @@ const GameChart = ({ stats }: GameChartProps) => {
 				console.error("Could not parse chart evaluation");
 			}
 
+			const classification =
+				index === 0 ? "Start" : stats.reviewedMoves?.at(index - 1)?.classification ?? "Unknown";
+
 			return {
 				winProbability,
-				moveNumber: index,
+				moveNumber: index - 1,
 				evaluation: validEval,
+				classification,
 			};
 		});
 	}, [stats]);
 	return (
-		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary h-20 w-full overflow-hidden rounded">
+		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary h-20 w-full overflow-hidden rounded-lg p-1">
 			<ResponsiveContainer width="100%" height="100%">
 				<AreaChart
 					data={data}
-					className="bg-black"
+					className="overflow-hidden rounded-lg bg-black hover:cursor-pointer focus:outline-hidden"
 					margin={{ top: 0, bottom: 0, left: 0, right: 0 }}
+					onMouseMove={(state) => {
+						if (state && state.activeTooltipIndex !== undefined)
+							setActiveIndex(Number(state.activeTooltipIndex));
+					}}
+					onMouseLeave={() => setActiveIndex(null)}
+					onClick={() => {
+						if (activeIndex !== null && data[activeIndex])
+							goToMove(data[activeIndex].moveNumber);
+					}}
 				>
 					<XAxis hide dataKey={"moveNumber"} />
 					<YAxis hide domain={[0, 100]} />
+					<ReferenceLine
+						y={50}
+						stroke="#6b7280"
+						strokeWidth={2}
+						strokeOpacity={0.5}
+					/>
+					<ReferenceLine
+						x={currentMoveNumber}
+						stroke={getMoveColor(
+							stats.reviewedMoves
+								.at(currentMoveNumber)
+								?.classification.split(" ")
+								.at(1) ??
+								stats.reviewedMoves.at(currentMoveNumber)
+									?.classification ??
+								"Loading",
+						)}
+						strokeWidth={2}
+					/>
 					<Area
 						dataKey={"winProbability"}
 						fill="#fff"
 						fillOpacity={1}
 						stroke="white"
 						type="monotone"
+						dot={
+							<CustomDot currentMoveNumber={currentMoveNumber} />
+						}
+						activeDot={<ActiveDot goToMove={goToMove} />}
 					/>
 					<Tooltip
 						isAnimationActive={false}

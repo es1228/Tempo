@@ -17,7 +17,6 @@ export const expectedPoints = (
 
 	// calculate points drop
 	const pointsDrop = +(exP(evaluation2) - exP(evaluation1)).toFixed(2);
-	console.log(pointsDrop);
 
 	// classify moves
 	if (pointsDrop <= 1.0 && pointsDrop > 0.2) return "a blunder";

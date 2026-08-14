@@ -1,10 +1,10 @@
 import { Chess } from "chess.js";
 import { convertPGNToFENs } from "./convertPGNToFENs";
 import { runClassification } from "./runClassification";
-import { evaluateSinglePos } from "./evaluateSinglePos";
 import type { CachedEvalData } from "../hooks/useEvalCache";
 import type { PV } from "../types/PV";
 import { calculateAccuracy, calculateWinProbability } from "./moveCalculations";
+import { evaluateWithWorkerPool } from "./evaluateGame";
 
 export type Stats = {
 	white: {
@@ -35,9 +35,9 @@ export type Stats = {
 	};
 	evaluations: string[];
 	reviewedMoves: Array<{
-		san: string,
-		classification: string,
-	}>
+		san: string;
+		classification: string;
+	}>;
 };
 
 export const runGameReview = async (
@@ -49,7 +49,7 @@ export const runGameReview = async (
 		bestMove: string,
 		pv: PV[],
 	) => void,
-	depth = 16,
+	depth = 14,
 	lines = 2,
 ) => {
 	// load game
@@ -90,26 +90,15 @@ export const runGameReview = async (
 		reviewedMoves: [],
 	};
 
-	let evaluations = []
-
 	// cache the game
-	for (const fen of fens) {
-		const cleanFen = fen.split(" ").splice(0, 4).join(" ");
-		let cached = getCachedEval(cleanFen);
-
-		if (!cached) {
-			const evalResult = await evaluateSinglePos(fen, depth, lines);
-			setCachedEval(
-				cleanFen,
-				evalResult.evaluation,
-				evalResult.bestMove,
-				evalResult.pv,
-			);
-			evaluations.push(evalResult.evaluation)
-		}
-	}
-
-	stats.evaluations = evaluations;
+	stats.evaluations = await evaluateWithWorkerPool(
+		pgn,
+		depth,
+		lines,
+		getCachedEval,
+		setCachedEval,
+		Math.min(navigator.hardwareConcurrency ?? 4, 6),
+	);
 
 	let accuracyWhite = 0;
 	let accuracyBlack = 0;
@@ -163,7 +152,7 @@ export const runGameReview = async (
 		stats.reviewedMoves.push({
 			san: move.san,
 			classification: result.classification,
-		})
+		});
 
 		// classify
 		const classification = result.classification;

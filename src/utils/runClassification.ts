@@ -106,13 +106,6 @@ export const runClassification = async ({
 			return { classification: "brilliant" };
 		}
 
-		console.log(pvDiff);
-		console.log(isbetterMovePlayed);
-		console.log(isOnlyGoodMove);
-		console.log(isNotAlreadyWinning);
-		console.log(isDrawnOrWinning);
-		console.log(!isObviousCapture);
-
 		const isGreat =
 			isbetterMovePlayed &&
 			isOnlyGoodMove &&

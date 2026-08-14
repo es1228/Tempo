@@ -28,11 +28,10 @@ export const detectMaterialSacrifice = (
 
 			const prevMove = gameAfterMove.history({ verbose: true }).at(-1)!;
 
-			// ignore captures of higher value
+			// ignore captures of equal or higher value
 			if (
-				square.square === prevMove.to &&
 				prevMove?.captured &&
-				PIECE_VALUES[prevMove?.captured] > PIECE_VALUES[prevMove.piece]
+				PIECE_VALUES[prevMove?.captured] >= PIECE_VALUES[square.type]
 			)
 				continue;
 

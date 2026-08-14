@@ -1,16 +1,18 @@
 import type { CachedEvalData } from "../hooks/useEvalCache";
 import type { PV } from "../types/PV";
 import { checkActivePlayer } from "./checkActivePlayer";
+import { convertPGNToFENs } from "./convertPGNToFENs";
 import { uciToSan } from "./uciToSan";
 
-export const evaluateSinglePos = async (
+const evaluateOnWorker = async (
+	worker: Worker,
 	fen: string,
 	depth: number,
 	lines: number,
 ): Promise<CachedEvalData> => {
 	return new Promise((resolve) => {
 		// instantiate
-		const stockfish = new Worker("/stockfish/stockfish-18-lite.js");
+		const stockfish = worker;
 
 		// data
 		let bestMove = "";
@@ -84,9 +86,6 @@ export const evaluateSinglePos = async (
 				if (event.data.includes("info depth 0 score cp 0")) {
 					// draw
 					evaluation = "+0.0";
-
-					// cleanup
-					stockfish?.terminate();
 					resolve({ evaluation, bestMove, pv });
 				}
 			}
@@ -94,22 +93,71 @@ export const evaluateSinglePos = async (
 			else if (event.data.startsWith("bestmove")) {
 				const uci = event.data.split(" ")[1];
 				bestMove = uciToSan(fen, uci)!;
-
-				// cleanup
-				stockfish?.terminate();
 				resolve({ evaluation, bestMove, pv });
 			}
 		};
 
 		// send message to evaluate
-		stockfish.postMessage("uci");
-		stockfish.postMessage("isready");
-		//stockfish.postMessage(`setoption name Threads value ${navigator.hardwareConcurrency ?? 4}`)
 		stockfish.postMessage(`setoption name MultiPV value ${lines}`);
 		stockfish.postMessage(`position fen ${fen}`);
 		stockfish.postMessage(`go depth ${depth}`);
-
-		// cleanup
-		return () => stockfish?.terminate();
 	});
+};
+
+export const evaluateWithWorkerPool = async (
+	pgn: string,
+	depth: number,
+	lines: number,
+	getCachedEval: (fen: string) => CachedEvalData | undefined,
+	setCachedEval: (
+		fen: string,
+		evaluation: string,
+		bestMove: string,
+		pv: PV[],
+	) => void,
+	poolSize = 4,
+): Promise<string[]> => {
+	const fens = convertPGNToFENs(pgn);
+
+	const evaluations: string[] = new Array(fens.length);
+	let currentIndex = 0;
+
+	const workers = Array.from(
+		{ length: Math.min(poolSize, fens.length) },
+		() => {
+			const stockfish = new Worker("/stockfish/stockfish-18-lite.js");
+			stockfish.postMessage("uci");
+			stockfish.postMessage("isready");
+			stockfish.postMessage(`setoption name Threads value ${Math.min(navigator.hardwareConcurrency ?? 4, 6)}`);
+			return stockfish;
+		},
+	);
+
+	const workerTask = async (worker: Worker) => {
+		while (true) {
+			const index = currentIndex++;
+			if (index >= fens.length) break;
+
+			const fen = fens[index];
+			const cleanFen = fen.split(" ").splice(0, 4).join(" ");
+			const cached = getCachedEval(cleanFen);
+
+			if (cached) {
+				evaluations[index] = cached.evaluation;
+			} else {
+				const evalResult = await evaluateOnWorker(worker, fen, depth, lines);
+				setCachedEval(
+					cleanFen,
+					evalResult.evaluation,
+					evalResult.bestMove,
+					evalResult.pv,
+				);
+				evaluations[index] = evalResult.evaluation;
+			}
+		}
+	};
+
+	await Promise.all(workers.map((worker) => workerTask(worker)));
+	workers.forEach(worker => worker.terminate());
+	return evaluations;
 };

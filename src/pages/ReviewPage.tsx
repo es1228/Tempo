@@ -83,7 +83,7 @@ const ReviewPage = () => {
 
 			return (
 				<div
-					className="relative z-100 h-full w-full overflow-visible"
+					className="relative h-full w-full overflow-visible"
 					style={{
 						...squareStyle,
 						...highlightStyle,
@@ -94,7 +94,7 @@ const ReviewPage = () => {
 						<img
 							src={`/ChessIcons/${moveClass}.png`}
 							alt={classification}
-							className="pointer-events-none absolute -top-3 -right-3 z-100 h-6 w-6 overflow-visible md:-top-4 md:-right-4 md:h-8 md:w-8"
+							className="pointer-events-none absolute -top-3 -right-3 z-50 h-6 w-6 overflow-visible md:-top-4 md:-right-4 md:h-8 md:w-8"
 						/>
 					)}
 				</div>
@@ -106,9 +106,9 @@ const ReviewPage = () => {
 	const memoizedOptions = useMemo(() => {
 		return {
 			...options,
-			squareRenderer: memoizedSquareRenderer
-		}
-	}, [options, memoizedSquareRenderer])
+			squareRenderer: memoizedSquareRenderer,
+		};
+	}, [options, memoizedSquareRenderer]);
 
 	return (
 		<>
@@ -140,9 +140,7 @@ const ReviewPage = () => {
 							/>
 						)}
 						<div className="w-auto md:w-120">
-							<Chessboard
-								options={memoizedOptions}
-							/>
+							<Chessboard options={memoizedOptions} />
 							<PromotionDialog
 								isDialogOpen={!!promotionMove}
 								onSelect={(p: PieceSymbol) =>
@@ -230,8 +228,8 @@ const ReviewPage = () => {
 						)}
 						{panel === "Report" && (
 							<>
+								<GameChart stats={stats!} goToMove={goToMove} currentMoveNumber={currentMove}/>
 								<AccuracyContainer stats={stats!} />
-								<GameChart stats={stats!} />
 								<ClassificationContainer
 									stats={stats!}
 									whiteName={whitePlayer}
