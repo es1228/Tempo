@@ -25,20 +25,23 @@ import ClassificationContainer from "../components/ClassificationContainer";
 import AccuracyContainer from "../components/AccuracyContainer";
 import GameChart from "../components/GameChart";
 import GameReviewLoadingDialog from "../components/GameReviewLoadingDialog";
+import { getMainlineNodes } from "../utils/getMainlineNodes";
+import type { MoveNode } from "../types/HistoryTree";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-	const [isReviewInProgress, setIsReviewInProgress] = useState<boolean>(false);
+	const [isReviewInProgress, setIsReviewInProgress] =
+		useState<boolean>(false);
 
 	const {
 		options,
 		chessPosition,
 		chessPGN,
 		setChessPGN,
-		history,
-		goToMove,
-		currentMove,
+		goToNode,
+		currentNode,
+		rootNode,
 		lastMove,
 		promotionMove,
 		onPromotionPieceSelect,
@@ -75,11 +78,11 @@ const ReviewPage = () => {
 			const moveClass = classification.split(" ").at(-1) ?? "Loading";
 			const squareStyle = options.squareStyles?.[square] ?? {};
 			const moveColor = getMoveColor(classification);
-			const startSquare = history?.at(currentMove)?.from;
-			const endSquare = history?.at(currentMove)?.to;
+			const startSquare = currentNode?.move?.from;
+			const endSquare = currentNode?.move?.to;
+			const isRoot = currentNode === rootNode;
 			const highlightStyle: CSSProperties =
-				currentMove >= 0 &&
-				(square === startSquare || square === endSquare)
+				!isRoot && (square === startSquare || square === endSquare)
 					? {
 							backgroundColor: `color-mix(in oklch, ${moveColor} 40%, transparent)`,
 						}
@@ -94,7 +97,7 @@ const ReviewPage = () => {
 					}}
 				>
 					{children}
-					{currentMove >= 0 && square === endSquare && (
+					{!isRoot && square === endSquare && (
 						<img
 							src={`/ChessIcons/${moveClass}.png`}
 							alt={classification}
@@ -104,7 +107,7 @@ const ReviewPage = () => {
 				</div>
 			);
 		},
-		[classification, options.squareStyles, history, currentMove],
+		[classification, options.squareStyles, history, currentNode, rootNode],
 	);
 
 	const memoizedOptions = useMemo(() => {
@@ -114,9 +117,23 @@ const ReviewPage = () => {
 		};
 	}, [options, memoizedSquareRenderer]);
 
+	const mainlineNodes = getMainlineNodes(rootNode);
+
+	const getMainlineParent = (currentNode: MoveNode) => {
+		if (currentNode === rootNode) return -1;
+
+		let curr: MoveNode | null | undefined = currentNode;
+		while (curr) {
+			const index = mainlineNodes.indexOf(currentNode);
+			if (index !== -1) return index;
+			curr = curr.parent;
+		}
+		return -1;
+	};
+
 	return (
 		<>
-			<GameReviewLoadingDialog isOpen={isReviewInProgress}/>
+			<GameReviewLoadingDialog isOpen={isReviewInProgress} />
 			<ImportDialog
 				values={["Chess.com", "PGN", "FEN"]}
 				isDialogOpen={isDialogOpen}
@@ -226,16 +243,25 @@ const ReviewPage = () => {
 									pv={pv}
 								/>
 								<HistoryContainer
-									history={history}
-									currentMove={currentMove}
-									goToMove={goToMove}
 									stats={stats!}
+									rootNode={rootNode}
+									currentNode={currentNode}
+									goToNode={goToNode}
 								/>
 							</>
 						)}
 						{panel === "Report" && (
 							<>
-								<GameChart stats={stats!} goToMove={goToMove} currentMoveNumber={currentMove}/>
+								<GameChart
+									stats={stats!}
+									goToMove={(moveNumber: number) =>
+										mainlineNodes.length > 0 &&
+										goToNode(mainlineNodes[moveNumber])
+									}
+									currentMoveNumber={getMainlineParent(
+										currentNode,
+									)}
+								/>
 								<AccuracyContainer stats={stats!} />
 								<ClassificationContainer
 									stats={stats!}
@@ -248,11 +274,14 @@ const ReviewPage = () => {
 					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
 							icon="first_page"
-							onClick={() => goToMove(-1)}
+							onClick={() => goToNode(rootNode)}
 						/>
 						<Button
 							icon="arrow_back"
-							onClick={() => goToMove(currentMove - 1)}
+							onClick={() =>
+								currentNode.parent &&
+								goToNode(currentNode.parent)
+							}
 						/>
 						<Button
 							icon="cached"
@@ -260,11 +289,20 @@ const ReviewPage = () => {
 						/>
 						<Button
 							icon="arrow_forward"
-							onClick={() => goToMove(currentMove + 1)}
+							onClick={() =>
+								currentNode.children.length > 0 &&
+								goToNode(currentNode.children[0])
+							}
 						/>
 						<Button
 							icon="last_page"
-							onClick={() => goToMove(history.length - 1)}
+							onClick={() => {
+								let curr = rootNode;
+
+								while (curr.children.length > 0)
+									curr = curr.children[0];
+								goToNode(curr);
+							}}
 						/>
 					</div>
 				</div>
