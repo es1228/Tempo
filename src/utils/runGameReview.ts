@@ -1,4 +1,4 @@
-import { Chess } from "chess.js";
+import { Chess, validateFen } from "chess.js";
 import { convertPGNToFENs } from "./convertPGNToFENs";
 import { runClassification } from "./runClassification";
 import type { CachedEvalData } from "../hooks/useEvalCache";
@@ -35,6 +35,8 @@ export type Stats = {
 	};
 	evaluations: string[];
 	reviewedMoves: Array<{
+		before: string;
+		after: string;
 		san: string;
 		classification: string;
 	}>;
@@ -49,9 +51,11 @@ export const runGameReview = async (
 		bestMove: string,
 		pv: PV[],
 	) => void,
-	depth = 14,
+	depth = 16,
 	lines = 2,
 ) => {
+	if (validateFen(pgn).ok) return;
+
 	// load game
 	const fens = convertPGNToFENs(pgn);
 	const chess = new Chess();
@@ -109,8 +113,7 @@ export const runGameReview = async (
 	for (let i = 0; i < history.length; i++) {
 		const move = history[i];
 
-		const currentFen = fens.at(i + 1) ?? chess.fen();
-		subChess.load(currentFen);
+		subChess.move(move)
 
 		const pgn = subChess.pgn();
 		const fenAtCurr = fens
@@ -154,6 +157,8 @@ export const runGameReview = async (
 		stats.reviewedMoves.push({
 			san: move.san,
 			classification: result.classification,
+			before: move.before,
+			after: move.after,
 		});
 
 		// classify

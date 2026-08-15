@@ -47,17 +47,19 @@ const useClassify = (
 						return { evaluation: "+0.0", bestMove: "", pv: [] };
 					}
 
-					const cached = getCachedEval(fen);
+					const cleanFen = fen.split(" ").splice(0, 4).join(" ");
+
+					const cached = getCachedEval(cleanFen);
 					if (cached) return cached;
 
 					const worker = new Worker(
 						"/stockfish/stockfish-18-lite.js",
 					);
-					const result = await evaluateOnWorker(worker, fen, 16, 2);
+					const result = await evaluateOnWorker(worker, cleanFen, 20, 2);
 					worker.terminate();
 
 					setCachedEval(
-						fen,
+						cleanFen,
 						result.evaluation,
 						result.bestMove,
 						result.pv,
@@ -74,24 +76,6 @@ const useClassify = (
 				setEvaluation(currStockfish.evaluation);
 				setPrevBestMove(prevStockfish.bestMove);
 				setPv(currStockfish.pv);
-				setCachedEval(
-					fenAtCurr ?? "",
-					currStockfish.evaluation,
-					currStockfish.bestMove,
-					currStockfish.pv,
-				);
-				setCachedEval(
-					fenAtPrev ?? "",
-					prevStockfish.evaluation,
-					prevStockfish.bestMove,
-					prevStockfish.pv,
-				);
-				setCachedEval(
-					fenAtPrev2 ?? "",
-					prev2Stockfish.evaluation,
-					prev2Stockfish.bestMove,
-					prev2Stockfish.pv,
-				);
 
 				const result = await runClassification({
 					pgn,
