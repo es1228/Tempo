@@ -27,7 +27,7 @@ const MoveFeedbackContainer = ({
 			</div>
 			<h1 className="text-sm text-green-400">{best}</h1>
 			<hr className="my-2 rounded" />
-			<h1 className="text-center text-sm text-wrap w-full">{opening}</h1>
+			<h1 className="text-center text-sm text-wrap lg:max-w-70">{opening}</h1>
 		</div>
 	);
 };

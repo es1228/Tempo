@@ -24,10 +24,12 @@ import LinesContainer from "../components/LinesContainer";
 import ClassificationContainer from "../components/ClassificationContainer";
 import AccuracyContainer from "../components/AccuracyContainer";
 import GameChart from "../components/GameChart";
+import GameReviewLoadingDialog from "../components/GameReviewLoadingDialog";
 
 const ReviewPage = () => {
 	const [isFlipped, setIsFlipped] = useState<boolean>(false);
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+	const [isReviewInProgress, setIsReviewInProgress] = useState<boolean>(false);
 
 	const {
 		options,
@@ -59,12 +61,9 @@ const ReviewPage = () => {
 		if (!data) return;
 		setChessPGN(data);
 		setIsDialogOpen(false);
-		alert("Game Review Starting")
-		const startTime = performance.now();
+		setIsReviewInProgress(true);
 		const result = await runGameReview(data, getCachedEval, setCachedEval);
-		const endTime = performance.now();
-		const duration = endTime - startTime
-		alert(`Game Review Completed in ${duration.toFixed(2)} ms`)
+		setIsReviewInProgress(false);
 		setStats(result);
 		console.log(result);
 	};
@@ -117,6 +116,7 @@ const ReviewPage = () => {
 
 	return (
 		<>
+			<GameReviewLoadingDialog isOpen={isReviewInProgress}/>
 			<ImportDialog
 				values={["Chess.com", "PGN", "FEN"]}
 				isDialogOpen={isDialogOpen}
@@ -174,7 +174,7 @@ const ReviewPage = () => {
 						)}
 					</div>
 				</div>
-				<div className="bg-on-bg dark:bg-on-bg-dark mx-4 mb-40 flex flex-col justify-center gap-2 overflow-auto rounded-3xl p-2 lg:mt-40 lg:mr-10 lg:mb-0 lg:h-120 lg:w-fit lg:scale-125 lg:max-w-80">
+				<div className="bg-on-bg dark:bg-on-bg-dark mx-4 mb-40 flex flex-col justify-center gap-2 overflow-auto rounded-3xl p-2 lg:mt-40 lg:mr-10 lg:mb-0 lg:h-120 lg:w-fit lg:scale-125">
 					<div className="space-y-2 overflow-auto">
 						<div className="flex flex-row items-center justify-between">
 							<h1 className="p-2 text-2xl">Game Review</h1>
