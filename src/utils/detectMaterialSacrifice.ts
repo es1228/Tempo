@@ -73,9 +73,7 @@ export const detectMaterialSacrifice = (
 			if (opponentAttackValue === 0) continue;
 			if (playerDefenseValue > 0) continue;
 
-			console.log(
-				`Square: ${square.square}, Attackers: ${opponentAttackValue}, Defenders: ${playerDefenseValue}`,
-			);
+			//console.log(`Square: ${square.square}, Attackers: ${opponentAttackValue}, Defenders: ${playerDefenseValue}`,);
 			if (opponentAttackValue > playerDefenseValue) return true;
 		}
 	}

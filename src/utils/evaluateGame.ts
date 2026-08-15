@@ -19,7 +19,7 @@ const initializeWorker = (worker: Worker): Promise<void> => {
 	});
 };
 
-const evaluateOnWorker = async (
+export const evaluateOnWorker = async (
 	worker: Worker,
 	fen: string,
 	depth: number,
