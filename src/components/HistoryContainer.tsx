@@ -1,132 +1,113 @@
+import type { Move } from "chess.js";
 import Button from "./Button";
 import type { Stats } from "../utils/runGameReview";
 import { getMoveColor } from "../utils/getMoveColor";
-import type { MoveNode } from "../types/HistoryTree";
-import { getMainlineNodes } from "../utils/getMainlineNodes";
 
 type HistoryContainerProps = {
+	history: Move[];
+	currentMove: number;
+	goToMove: (index: number) => void;
 	stats: Stats;
-	rootNode: MoveNode;
-	currentNode: MoveNode;
-	goToNode: (node: MoveNode) => void;
-};
-
-type BranchRendererProps = {
-	node: MoveNode;
-	currentNode: MoveNode;
-	goToNode: (node: MoveNode) => void;
-	stats?: Stats;
-};
-
-const BranchRenderer = ({
-	node,
-	currentNode,
-	goToNode,
-	stats,
-}: BranchRendererProps) => {
-	const move = node.move;
-	if (!move) return null;
-
-	const variationChildren = node.children.slice(1);
-
-	const review = stats?.reviewedMoves?.find((m) => m.san === move.san);
-	const moveClass = review?.classification ?? "";
-	const shortClass = moveClass.includes(" ")
-		? moveClass.split(" ")[1]
-		: moveClass;
-
-	return (
-		<div className="flex items-center gap-2">
-			{stats && review && shortClass && (
-				<img
-					src={`/ChessIcons/${shortClass}.png`}
-					alt={shortClass}
-					className="h-6 w-6"
-				/>
-			)}
-			<Button
-				text={move.san}
-				textColor={getMoveColor(moveClass)}
-				onClick={() => goToNode(node)}
-				isOnBg={currentNode.id === node.id}
-			/>
-			{variationChildren.map((varNode) => {
-				const subNodes = [varNode, ...getMainlineNodes(varNode)];
-
-				const subTurns = [];
-				for (let i = 0; i < subNodes.length; i += 2) {
-					subTurns.push({
-						turnNumber: Math.floor(i / 2) + 1,
-						white: subNodes[i],
-						black: subNodes[i + 1] ?? null,
-					});
-				}
-
-				return (
-					<div key={varNode.id} className="text-text-secondary flex items-center">
-						<p>(</p>
-						{subNodes.map((subNode) => (
-							<div>
-								<BranchRenderer
-									key={subNode.id}
-									node={subNode}
-									currentNode={currentNode}
-									goToNode={goToNode}
-									stats={stats}
-								/>
-							</div>
-						))}
-						<p>)</p>
-					</div>
-				);
-			})}
-		</div>
-	);
 };
 
 const HistoryContainer = ({
+	history,
+	currentMove,
+	goToMove,
 	stats,
-	rootNode,
-	currentNode,
-	goToNode,
 }: HistoryContainerProps) => {
 	// separate into turns
-	const mainlineNodes = getMainlineNodes(rootNode);
-
 	const turns = [];
-	for (let i = 0; i < mainlineNodes.length; i += 2) {
+	for (let i = 0; i < history.length; i += 2) {
 		turns.push({
 			turnNumber: Math.floor(i / 2) + 1,
-			white: mainlineNodes[i],
-			black: mainlineNodes[i + 1] ?? null,
+			white: { move: history[i], index: i },
+			black: history[i + 1]
+				? { move: history[i + 1], index: i + 1 }
+				: null,
 		});
 	}
-
 	return (
-		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-4 max-w-80">
+		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-4">
 			<h1>History</h1>
 			<hr className="my-2 rounded" />
-			{turns.map((turn, index) => (
-				<div key={index} className="flex items-center gap-2 max-w-fit overflow-auto">
-					<p>{turn.turnNumber}.</p>
-					{turn.white && (
-						<BranchRenderer
-							node={turn.white}
-							currentNode={currentNode}
-							goToNode={goToNode}
-							stats={stats}
-						/>
-					)}
-					{turn.black && (
-						<BranchRenderer
-							node={turn.black}
-							currentNode={currentNode}
-							goToNode={goToNode}
-							stats={stats}
-						/>
-					)}
-				</div>
-			))}
+			<ol className="list-decimal">
+				{turns.map(({ turnNumber, white, black }) => {
+					return (
+						<div
+							key={turnNumber}
+							className="flex flex-row items-center gap-2"
+						>
+							<p>{turnNumber}.</p>
+							{stats && (
+								<img
+									src={`/ChessIcons/${
+										stats?.reviewedMoves
+											?.at(white.index)
+											?.classification?.includes(" ")
+											? stats?.reviewedMoves
+													?.at(white.index)
+													?.classification.split(
+														" ",
+													)[1]
+											: stats?.reviewedMoves?.at(
+													white.index,
+												)?.classification
+									}.png`}
+									alt={
+										stats.reviewedMoves?.at(white.index)
+											?.classification
+									}
+									className="h-6 w-6"
+								/>
+							)}
+							<Button
+								text={white.move.san}
+								textColor={getMoveColor(stats?.reviewedMoves?.at(white.index)
+											?.classification ?? "")}
+								onClick={() => goToMove(white.index)}
+								isOnBg={currentMove === white.index}
+							/>
+							{black && (
+								<>
+									{stats && (
+										<img
+											src={`/ChessIcons/${
+												stats?.reviewedMoves
+													?.at(black.index)
+													?.classification?.includes(
+														" ",
+													)
+													? stats?.reviewedMoves
+															?.at(black.index)
+															?.classification.split(
+																" ",
+															)[1]
+													: stats?.reviewedMoves?.at(
+															black.index,
+														)?.classification
+											}.png`}
+											alt={
+												stats.reviewedMoves?.at(
+													black.index,
+												)?.classification
+											}
+											className="h-6 w-6"
+										/>
+									)}
+									<Button
+										text={black.move.san}
+										textColor={getMoveColor(stats?.reviewedMoves?.at(black.index)
+											?.classification ?? "")}
+										onClick={() => goToMove(black.index)}
+										isOnBg={currentMove === black.index}
+									/>
+								</>
+							)}
+						</div>
+					);
+				})}
+			</ol>
 		</div>
 	);
 };

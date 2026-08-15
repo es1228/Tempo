@@ -1,5 +1,6 @@
 import {
 	Chess,
+	Move,
 	validateFen,
 	type Color,
 	type PieceSymbol,
@@ -16,7 +17,6 @@ import { useBoardColors } from "../globalContext";
 import useStockfish from "./useStockfish";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
 import useEvalCache from "./useEvalCache";
-import type { MoveNode } from "../types/HistoryTree";
 
 type useBoardProps = {
 	boardOrientation: BoardColors;
@@ -27,7 +27,7 @@ type useBoardProps = {
 	engineStrength?: number;
 };
 
-export const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 const useBoard = ({
 	boardOrientation,
@@ -42,17 +42,8 @@ const useBoard = ({
 	const chessGame = chessGameRef.current;
 	const [chessPosition, setChessPosition] = useState(chessGame.fen());
 	const [chessPGN, setChessPGNState] = useState(chessGame.pgn());
-	// history tree
-	const rootNodeRef = useRef<MoveNode>({
-		id: "root",
-		fen: DEFAULT_FEN,
-		move: null,
-		parent: null,
-		children: [],
-	});
-	const [currentNode, setCurrentNode] = useState<MoveNode>(
-		rootNodeRef.current,
-	);
+	const [history, setHistory] = useState<Move[]>([]);
+	const [currentMove, setCurrentMove] = useState<number>(-1);
 	const [moveFrom, setMoveFrom] = useState("");
 	const [optionSquares, setOptionSquares] = useState<
 		Record<string, CSSProperties>
@@ -81,84 +72,6 @@ const useBoard = ({
 		isInUse: isPlayingAgainstEngine,
 	});
 
-	// rebuild tree
-	const loadNodeState = (targetNode: MoveNode) => {
-		chessGame.load(initialFEN.current);
-
-		// collect path
-		const path: MoveNode[] = [];
-		let curr: MoveNode | null = targetNode;
-		while (curr && curr.parent !== null) {
-			path.unshift(curr);
-			curr = curr.parent;
-		}
-
-		// replay moves
-		for (const node of path) {
-			if (node.move) {
-				chessGame.move({
-					from: node.move.from,
-					to: node.move.to,
-					promotion: node.move.promotion,
-				});
-			}
-		}
-
-		setChessPosition(chessGame.fen());
-		setChessPGNState(chessGame.pgn());
-		setMoveFrom("");
-		setOptionSquares({});
-	};
-
-	// commit move + manage variation tree branches
-	const commitMoveAndBranch = (
-		from: Square,
-		to: Square,
-		promotion: PieceSymbol = "q",
-	) => {
-		try {
-			// get move details
-			chessGame.move({ from, to, promotion });
-			const verboseMoves = chessGame.history({ verbose: true });
-			const latestMove = verboseMoves.at(-1);
-			const newFen = chessGame.fen();
-
-			// check if exists already
-			const existingChild = currentNode.children.find(
-				(child) =>
-					child.move &&
-					child.move.from === latestMove?.from &&
-					child.move.to === latestMove.to &&
-					child.move.promotion === latestMove.promotion,
-			);
-
-			if (existingChild) {
-				setCurrentNode(existingChild);
-				loadNodeState(existingChild);
-			} else {
-				const newNode: MoveNode = {
-					id: crypto.randomUUID(),
-					fen: newFen,
-					move: latestMove ?? null,
-					parent: currentNode,
-					children: [],
-				};
-
-				currentNode.children.push(newNode);
-				setCurrentNode(newNode);
-				setChessPosition(newFen);
-				setChessPGNState(chessGame.pgn());
-			}
-
-			setMoveFrom("");
-			setOptionSquares({});
-			return true;
-		} catch {
-			loadNodeState(currentNode);
-			return false;
-		}
-	};
-
 	// detect promotion move
 	const isPromotionMove = (from: Square, to: Square) => {
 		const piece = chessGame.get(from);
@@ -177,6 +90,23 @@ const useBoard = ({
 		return false;
 	};
 
+	// sync the game state
+	const syncGameState = (overrideHistory?: Move[]) => {
+		// update position
+		setChessPosition(chessGame.fen());
+		setChessPGNState(chessGame.pgn());
+
+		// update history
+		if (overrideHistory) {
+			setHistory(overrideHistory);
+			setCurrentMove(overrideHistory.length - 1);
+		}
+
+		// clear movefrom and optionsquares
+		setMoveFrom("");
+		setOptionSquares({});
+	};
+
 	// pgn import
 	const setChessPGN = (pgn: string) => {
 		try {
@@ -192,16 +122,9 @@ const useBoard = ({
 			if (validateFen(trimmed).ok) {
 				initialFEN.current = trimmed;
 				chessGame.load(trimmed);
-				rootNodeRef.current = {
-					id: "root",
-					fen: trimmed,
-					move: null,
-					parent: null,
-					children: [],
-				};
-				setCurrentNode(rootNodeRef.current);
-				setChessPosition(trimmed);
-				setChessPGNState(chessGame.pgn());
+				syncGameState();
+				setCurrentMove(-1);
+				setHistory([]);
 				return;
 			}
 
@@ -219,49 +142,35 @@ const useBoard = ({
 			setBlackElo(headers["BlackElo"] ?? "");
 
 			// sync
-			const verboseHistory = chessGame.history({ verbose: true });
-
-			// rebuild tree
-			const newRoot: MoveNode = {
-				id: "root",
-				fen: DEFAULT_FEN,
-				move: null,
-				parent: null,
-				children: [],
-			};
-
-			let pointer = newRoot;
+			const history = chessGame.history({ verbose: true });
 			chessGame.reset();
-
-			for (const move of verboseHistory) {
-				chessGame.move({
-					from: move.from,
-					to: move.to,
-					promotion: move.promotion,
-				});
-				const newNode: MoveNode = {
-					id: crypto.randomUUID(),
-					fen: chessGame.fen(),
-					move,
-					parent: pointer,
-					children: [],
-				};
-				pointer.children.push(newNode);
-				pointer = newNode;
-			}
-			rootNodeRef.current = newRoot;
-			setCurrentNode(pointer);
-			loadNodeState(pointer);
+			syncGameState(history);
+			setCurrentMove(-1);
 		} catch {
 			console.error("Unable to load pgn");
 		}
 	};
 
 	// go to move
-	const goToNode = (node: MoveNode) => {
+	const goToMove = (index: number) => {
+		if (!history || history.length === 0) return;
+
+		// hide promotion dialog
 		if (!!promotionMove) setPromotionMove(null);
-		setCurrentNode(node);
-		loadNodeState(node);
+
+		// restrict index
+		const clampedIndex = Math.max(-1, Math.min(index, history.length - 1));
+
+		// reset to initial loading point and go until move is found
+		chessGame.load(initialFEN.current);
+
+		for (let i = 0; i <= clampedIndex; i++) {
+			const move = history[i];
+			chessGame.move(typeof move === "string" ? move : move.san);
+		}
+
+		setCurrentMove(clampedIndex);
+		syncGameState();
 	};
 
 	// piece dropping logic
@@ -279,8 +188,6 @@ const useBoard = ({
 			return false;
 		}
 
-		loadNodeState(currentNode);
-
 		// promotion
 		const from = sourceSquare as Square;
 		const to = targetSquare as Square;
@@ -290,7 +197,20 @@ const useBoard = ({
 			return true;
 		}
 
-		return commitMoveAndBranch(from, to, "q");
+		// check if move is valid
+		try {
+			chessGame.move({
+				from: sourceSquare,
+				to: targetSquare,
+				promotion: "q",
+			});
+
+			syncGameState(chessGame.history({ verbose: true }));
+
+			return true;
+		} catch {
+			return false;
+		}
 	};
 
 	// get move options from square
@@ -341,8 +261,6 @@ const useBoard = ({
 		)
 			return;
 
-		loadNodeState(currentNode);
-
 		// piece clicked
 		if (!moveFrom && piece) {
 			// get move options
@@ -383,16 +301,37 @@ const useBoard = ({
 			return true;
 		}
 
-		commitMoveAndBranch(from, to, "q");
+		// check legal move
+		try {
+			chessGame.move({
+				from: moveFrom,
+				to: square,
+				promotion: "q",
+			});
+		} catch {
+			// invalid
+			const hasMoveOptions = getMoveOptions(square as Square);
+
+			if (hasMoveOptions) setMoveFrom(square);
+
+			return;
+		}
+
+		syncGameState(chessGame.history({ verbose: true }));
 	};
 
 	// promotion piece select
 	const onPromotionPieceSelect = (piece: PieceSymbol) => {
-		if (promotionMove) {
-			loadNodeState(currentNode);
-			commitMoveAndBranch(promotionMove.from, promotionMove.to, piece);
-		}
+		try {
+			chessGame.move({
+				from: promotionMove!.from,
+				to: promotionMove!.to,
+				promotion: piece,
+			});
+			setChessPosition(chessGame.fen());
+		} catch {}
 		setPromotionMove(null);
+		syncGameState(chessGame.history({ verbose: true }));
 	};
 
 	// engine moves
@@ -407,10 +346,9 @@ const useBoard = ({
 				const timer = setTimeout(() => {
 					try {
 						chessGame.move(bestMove);
-						const verboseMoves = chessGame.history({verbose: true})
-						const latestMove = verboseMoves.at(-1)!;
-						commitMoveAndBranch(latestMove?.from, latestMove?.to, latestMove?.promotion)
+						setChessPosition(chessGame.fen());
 					} catch {}
+					syncGameState(chessGame.history({ verbose: true }));
 				}, 300);
 				return () => clearTimeout(timer);
 			}
@@ -434,7 +372,9 @@ const useBoard = ({
 		id: "board",
 	};
 
-	const lastMove = chessGame.history().at(-1) ?? "";
+	// last move
+	const moves = chessGame.history();
+	const lastMove = moves[moves.length - 1] ?? "";
 
 	return {
 		options,
@@ -443,9 +383,9 @@ const useBoard = ({
 		chessGameRef,
 		chessPGN,
 		setChessPGN,
-		rootNode: rootNodeRef.current,
-		goToNode,
-		currentNode,
+		history,
+		goToMove,
+		currentMove,
 		lastMove,
 		whitePlayer,
 		blackPlayer,

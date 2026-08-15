@@ -49,7 +49,7 @@ export const runGameReview = async (
 		bestMove: string,
 		pv: PV[],
 	) => void,
-	depth = 16,
+	depth = 14,
 	lines = 2,
 ) => {
 	// load game
