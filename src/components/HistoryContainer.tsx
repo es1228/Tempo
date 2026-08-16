@@ -101,7 +101,7 @@ const HistoryContainer = ({
 	}
 
 	return (
-		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-4 max-w-80">
+		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-4 lg:max-w-80">
 			<h1>History</h1>
 			<hr className="my-2 rounded" />
 			{turns.map((turn) => (
