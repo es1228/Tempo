@@ -17,6 +17,7 @@ const Searchbar = ({ placeholder, value, onChange }: SearchbarProps) => {
 				</div>
 				<input
 					type="text"
+					id="search"
 					placeholder={placeholder}
 					onChange={onChange}
 					value={value}

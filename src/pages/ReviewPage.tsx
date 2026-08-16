@@ -99,7 +99,7 @@ const ReviewPage = () => {
 					{children}
 					{!isRoot && square === endSquare && (
 						<img
-							src={`/ChessIcons/${moveClass}.png`}
+							src={`${import.meta.env.BASE_URL}ChessIcons/${moveClass}.png`}
 							alt={classification}
 							className="pointer-events-none absolute -top-3 -right-3 z-50 h-6 w-6 overflow-visible md:-top-4 md:-right-4 md:h-8 md:w-8"
 						/>

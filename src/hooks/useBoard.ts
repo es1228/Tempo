@@ -210,7 +210,7 @@ const useBoard = ({
 			chessGame.loadPgn(trimmed);
 
 			// check for player headers
-			console.log(pgn);
+			//console.log(pgn);
 			const headers = chessGame.getHeaders();
 
 			setWhitePlayer(headers["White"] ?? "");

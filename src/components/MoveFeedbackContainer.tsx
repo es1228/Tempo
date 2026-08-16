@@ -18,7 +18,7 @@ const MoveFeedbackContainer = ({
 			<div className="flex flex-row items-center gap-1">
 				{moveClass && (
 					<img
-						src={`/ChessIcons/${moveClass}.png`}
+						src={`${import.meta.env.BASE_URL}ChessIcons/${moveClass}.png`}
 						alt={feedback}
 						className="h-8 w-8"
 					/>

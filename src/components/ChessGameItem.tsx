@@ -31,7 +31,7 @@ const ChessGameItem = ({
 			onClick={onClick}
 		>
 			<div className="flex flex-row items-center gap-4 overflow-auto">
-				<img src={`/ChessIcons/${timeClass}.png`} alt={timeClass} className="h-10 w-10"/>
+				<img src={`${import.meta.env.BASE_URL}ChessIcons/${timeClass}.png`} alt={timeClass} className="h-10 w-10"/>
 				<div>
 					<div className="flex flex-row items-center gap-2">
 						<span className="inline-block h-4 w-4 rounded border border-black bg-white"></span>

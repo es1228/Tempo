@@ -37,7 +37,7 @@ const BranchRenderer = ({
 		<div className="flex items-center gap-2">
 			{stats && review && shortClass && (
 				<img
-					src={`/ChessIcons/${shortClass}.png`}
+					src={`${import.meta.env.BASE_URL}ChessIcons/${shortClass}.png`}
 					alt={shortClass}
 					className="h-6 w-6"
 				/>
@@ -46,7 +46,7 @@ const BranchRenderer = ({
 				text={move.san}
 				textColor={getMoveColor(moveClass)}
 				onClick={() => goToNode(node)}
-				isOnBg={currentNode.id === node.id}
+				isOnBg={currentNode?.id === node?.id}
 			/>
 			{variationChildren.map((varNode) => {
 				const subNodes = [varNode, ...getMainlineNodes(varNode)];
@@ -104,8 +104,8 @@ const HistoryContainer = ({
 		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-4 max-w-80">
 			<h1>History</h1>
 			<hr className="my-2 rounded" />
-			{turns.map((turn, index) => (
-				<div key={index} className="flex items-center gap-2 max-w-fit overflow-auto">
+			{turns.map((turn) => (
+				<div key={turn.white.id} className="flex items-center gap-2 max-w-fit overflow-auto">
 					<p>{turn.turnNumber}.</p>
 					{turn.white && (
 						<BranchRenderer

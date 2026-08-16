@@ -28,7 +28,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.brilliant}</td>
 						<td>
 							<img
-								src="/ChessIcons/brilliant.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/brilliant.png`}
 								alt="Brilliant Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -40,7 +40,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.great}</td>
 						<td>
 							<img
-								src="/ChessIcons/great.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/great.png`}
 								alt="Great Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -52,7 +52,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.best}</td>
 						<td>
 							<img
-								src="/ChessIcons/best.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/best.png`}
 								alt="Best Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -64,7 +64,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.excellent}</td>
 						<td>
 							<img
-								src="/ChessIcons/excellent.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/excellent.png`}
 								alt="Excellent Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -76,7 +76,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.good}</td>
 						<td>
 							<img
-								src="/ChessIcons/good.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/good.png`}
 								alt="Good Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -88,7 +88,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.inaccuracy}</td>
 						<td>
 							<img
-								src="/ChessIcons/inaccuracy.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/inaccuracy.png`}
 								alt="Inaccuracy Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -100,7 +100,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.mistake}</td>
 						<td>
 							<img
-								src="/ChessIcons/mistake.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/mistake.png`}
 								alt="Mistake Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -112,7 +112,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.blunder}</td>
 						<td>
 							<img
-								src="/ChessIcons/blunder.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/blunder.png`}
 								alt="Blunder Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -124,7 +124,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.miss}</td>
 						<td>
 							<img
-								src="/ChessIcons/miss.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/miss.png`}
 								alt="Miss Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
@@ -136,7 +136,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 						<td className="text-center">{stats.white.theory}</td>
 						<td>
 							<img
-								src="/ChessIcons/theory.png"
+								src={`${import.meta.env.BASE_URL}ChessIcons/theory.png`}
 								alt="Theory Move Icon"
 								className="mx-auto h-8 w-8"
 							/>
