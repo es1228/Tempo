@@ -68,7 +68,7 @@ const ReviewPage = () => {
 		const result = await runGameReview(data, getCachedEval, setCachedEval);
 		setIsReviewInProgress(false);
 		setStats(result);
-		console.log(result);
+		//console.log(result);
 	};
 
 	const [panel, setPanel] = useState<"Report" | "Analysis">("Analysis");

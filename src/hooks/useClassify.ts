@@ -53,7 +53,7 @@ const useClassify = (
 					if (cached) return cached;
 
 					const worker = new Worker(
-						"/stockfish/stockfish-18-lite.js",
+						`${import.meta.env.BASE_URL}stockfish/stockfish-18-lite.js`,
 					);
 					const result = await evaluateOnWorker(worker, cleanFen, 20, 2);
 					worker.terminate();

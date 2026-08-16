@@ -142,7 +142,7 @@ export const evaluateWithWorkerPool = async (
 
 	const workers = Array.from(
 		{ length: Math.min(poolSize, fens.length) },
-		() => new Worker("/stockfish/stockfish-18-lite.js"),
+		() => new Worker(`${import.meta.env.BASE_URL}stockfish/stockfish-18-lite.js`),
 	);
 
 	await Promise.all(workers.map((worker) => initializeWorker(worker)));

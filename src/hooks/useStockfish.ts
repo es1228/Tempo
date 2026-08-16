@@ -61,7 +61,7 @@ const useStockfish = ({
 	// initiate hook
 	useEffect(() => {
 		// instantiate
-		const stockfish = new Worker("/stockfish/stockfish-18-lite.js");
+		const stockfish = new Worker(`${import.meta.env.BASE_URL}stockfish/stockfish-18-lite.js`);
 		stockfishRef.current = stockfish;
 		setPV([]);
 		const localPV: PV[] = [];

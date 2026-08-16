@@ -195,7 +195,7 @@ const GameChart = ({ stats, goToMove, currentMoveNumber }: GameChartProps) => {
 									<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary rounded-3xl p-2">
 										<div className="flex items-center gap-2">
 											<img
-												src={`/ChessIcons/${tooltipData.moveNumber === -1 ? "theory" : shortClassification}.png`}
+												src={`${import.meta.env.BASE_URL}ChessIcons/${tooltipData.moveNumber === -1 ? "theory" : shortClassification}.png`}
 												alt={
 													stats.reviewedMoves?.at(
 														tooltipData.moveNumber,

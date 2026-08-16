@@ -250,8 +250,8 @@ const useBoard = ({
 				pointer = newNode;
 			}
 			rootNodeRef.current = newRoot;
-			setCurrentNode(pointer);
-			loadNodeState(pointer);
+			setCurrentNode(newRoot);
+			loadNodeState(newRoot);
 		} catch {
 			console.error("Unable to load pgn");
 		}
