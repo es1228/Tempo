@@ -390,11 +390,9 @@ const useBoard = ({
 	useEffect(() => {
 		const engineMove = async () => {
 			if (!isPlayingAgainstEngine) return;
-			console.log("Playing engine");
 
 			const isEngineTurn =
 				checkActivePlayer(chessGame.fen()) !== playerColor;
-			console.log(isEngineTurn);
 
 			const worker = new Worker(
 				`${import.meta.env.BASE_URL}stockfish/stockfish-18-lite.js`,
