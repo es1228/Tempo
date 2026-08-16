@@ -27,7 +27,8 @@ type useBoardProps = {
 	engineStrength?: number;
 };
 
-export const DEFAULT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+export const DEFAULT_FEN =
+	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 const useBoard = ({
 	boardOrientation,
@@ -115,10 +116,13 @@ const useBoard = ({
 		from: Square,
 		to: Square,
 		promotion: PieceSymbol = "q",
+		san?: string,
 	) => {
 		try {
 			// get move details
-			chessGame.move({ from, to, promotion });
+			if (san) chessGame.move(san);
+			else chessGame.move({ from, to, promotion });
+
 			const verboseMoves = chessGame.history({ verbose: true });
 			const latestMove = verboseMoves.at(-1);
 			const newFen = chessGame.fen();
@@ -406,11 +410,10 @@ const useBoard = ({
 			if (isEngineTurn && bestMove && !chessGame.isGameOver()) {
 				const timer = setTimeout(() => {
 					try {
-						chessGame.move(bestMove);
-						const verboseMoves = chessGame.history({verbose: true})
-						const latestMove = verboseMoves.at(-1)!;
-						commitMoveAndBranch(latestMove?.from, latestMove?.to, latestMove?.promotion)
-					} catch {}
+						commitMoveAndBranch("a1", "a2", "q", bestMove);
+					} catch {
+						console.error("Move Failed");
+					}
 				}, 300);
 				return () => clearTimeout(timer);
 			}
