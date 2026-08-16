@@ -24,6 +24,7 @@ export const evaluateOnWorker = async (
 	fen: string,
 	depth: number,
 	lines: number,
+	skill?: number,
 ): Promise<CachedEvalData> => {
 	return new Promise((resolve) => {
 		// instantiate
@@ -117,6 +118,7 @@ export const evaluateOnWorker = async (
 		// send message to evaluate
 		stockfish.addEventListener("message", handleMessage);
 		stockfish.postMessage(`setoption name MultiPV value ${lines}`);
+		stockfish.postMessage(`setoption name Skill Level value ${skill ?? 20}`)
 		stockfish.postMessage(`position fen ${fen}`);
 		stockfish.postMessage(`go depth ${depth}`);
 	});

@@ -13,10 +13,9 @@ import type {
 } from "react-chessboard";
 import type { BoardColors } from "../types/BoardColors";
 import { useBoardColors } from "../globalContext";
-import useStockfish from "./useStockfish";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
-import useEvalCache from "./useEvalCache";
 import type { MoveNode } from "../types/HistoryTree";
+import { evaluateOnWorker } from "../utils/evaluateGame";
 
 type useBoardProps = {
 	boardOrientation: BoardColors;
@@ -69,18 +68,6 @@ const useBoard = ({
 	const [blackElo, setBlackElo] = useState<string>("");
 
 	const { boardTheme } = useBoardColors();
-
-	const { getCachedEval, setCachedEval } = useEvalCache();
-
-	const { bestMove } = useStockfish({
-		fen: chessGame.fen(),
-		depth: 16,
-		lines: 1,
-		skill: engineStrength,
-		getCachedEval,
-		setCachedEval,
-		isInUse: isPlayingAgainstEngine,
-	});
 
 	// rebuild tree
 	const loadNodeState = (targetNode: MoveNode) => {
@@ -401,15 +388,25 @@ const useBoard = ({
 
 	// engine moves
 	useEffect(() => {
-		const engineMove = () => {
+		const engineMove = async () => {
 			if (!isPlayingAgainstEngine) return;
+			console.log("Playing engine");
 
 			const isEngineTurn =
 				checkActivePlayer(chessGame.fen()) !== playerColor;
+			console.log(isEngineTurn);
+
+			const worker = new Worker(
+				`${import.meta.env.BASE_URL}stockfish/stockfish-18-lite.js`,
+			);
+			const result = await evaluateOnWorker(worker, chessPosition, 20, 1, engineStrength);
+			const bestMove = result.bestMove;
+			worker.terminate();
 
 			if (isEngineTurn && bestMove && !chessGame.isGameOver()) {
 				const timer = setTimeout(() => {
 					try {
+						console.log(bestMove);
 						commitMoveAndBranch("a1", "a2", "q", bestMove);
 					} catch {
 						console.error("Move Failed");
@@ -419,7 +416,7 @@ const useBoard = ({
 			}
 		};
 		engineMove();
-	}, [bestMove, isPlayingAgainstEngine, playerColor, chessPosition]);
+	}, [isPlayingAgainstEngine, playerColor, chessPosition]);
 
 	// board options
 	const options: ChessboardOptions = {
