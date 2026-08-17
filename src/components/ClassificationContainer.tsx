@@ -13,7 +13,7 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary w-full space-y-2 rounded-3xl p-4">
 			<h1>Classifications</h1>
 			<hr className="my-2 rounded" />
-			<table className="w-full border-separate border-spacing-x-4 text-sm">
+			<table className="table-fixed lg:table-auto w-full border-separate border-spacing-x-4 text-sm">
                 <thead>
                     <tr className="w-full">
                         <th></th>
