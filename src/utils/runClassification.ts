@@ -65,11 +65,14 @@ export const runClassification = async ({
 		const line1Score = prevStockfish.pv.at(0)?.score!;
 		const line2Score = prevStockfish.pv.at(1)?.score!;
 
+		console.log(line1Score);
+		console.log(line2Score);
+
 		const isbetterMovePlayed =
 			movePlayed && movePlayed === prevStockfish.bestMove;
 
 		// check if the move is not losing
-		const isDrawnOrWinning = line1Score > -500;
+		const isDrawnOrWinning = line1Score > -50;
 
 		// calculate difference between top 2 moves
 		const pvDiff =
