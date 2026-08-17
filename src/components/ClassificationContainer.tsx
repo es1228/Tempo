@@ -3,25 +3,29 @@ import type { Stats } from "../utils/runGameReview";
 
 type ClassificationContainerProps = {
 	stats: Stats;
-    whiteName: string;
-    blackName: string;
+	whiteName: string;
+	blackName: string;
 };
 
-const ClassificationContainer = ({ stats, whiteName, blackName }: ClassificationContainerProps) => {
+const ClassificationContainer = ({
+	stats,
+	whiteName,
+	blackName,
+}: ClassificationContainerProps) => {
 	if (!stats) return;
 	return (
 		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary w-full space-y-2 rounded-3xl p-4">
 			<h1>Classifications</h1>
 			<hr className="my-2 rounded" />
-			<table className="table-fixed lg:table-auto w-full border-separate border-spacing-x-4 text-sm">
-                <thead>
-                    <tr className="w-full">
-                        <th></th>
-                        <th className="text-center">{whiteName}</th>
-                        <th></th>
-                        <th className="text-center">{blackName}</th>
-                    </tr>
-                </thead>
+			<table className="w-full table-fixed border-separate border-spacing-x-4 text-sm lg:table-auto">
+				<thead>
+					<tr className="w-full">
+						<th></th>
+						<th className="text-center">{whiteName}</th>
+						<th></th>
+						<th className="text-center">{blackName}</th>
+					</tr>
+				</thead>
 				<tbody>
 					<tr style={{ color: getMoveColor("brilliant") }}>
 						<td>Brilliant</td>
@@ -85,7 +89,9 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 					</tr>
 					<tr style={{ color: getMoveColor("an inaccuracy") }}>
 						<td>Inaccuracy</td>
-						<td className="text-center">{stats.white.inaccuracy}</td>
+						<td className="text-center">
+							{stats.white.inaccuracy}
+						</td>
 						<td>
 							<img
 								src={`${import.meta.env.BASE_URL}ChessIcons/inaccuracy.png`}
@@ -93,7 +99,9 @@ const ClassificationContainer = ({ stats, whiteName, blackName }: Classification
 								className="mx-auto h-8 w-8"
 							/>
 						</td>
-						<td className="text-center">{stats.black.inaccuracy}</td>
+						<td className="text-center">
+							{stats.black.inaccuracy}
+						</td>
 					</tr>
 					<tr style={{ color: getMoveColor("a mistake") }}>
 						<td>Mistake</td>
