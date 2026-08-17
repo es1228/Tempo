@@ -65,9 +65,6 @@ export const runClassification = async ({
 		const line1Score = prevStockfish.pv.at(0)?.score!;
 		const line2Score = prevStockfish.pv.at(1)?.score!;
 
-		console.log(line1Score);
-		console.log(line2Score);
-
 		const isbetterMovePlayed =
 			movePlayed && movePlayed === prevStockfish.bestMove;
 
