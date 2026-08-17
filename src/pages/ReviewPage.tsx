@@ -271,7 +271,7 @@ const ReviewPage = () => {
 							</>
 						)}
 					</div>
-					<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
+					<div className="fixed bottom-25 left-5 right-5 lg:static backdrop-blur-3xl bg-on-bg-secondary/20 dark:bg-on-bg-dark-secondary/40 lg:bg-on-bg-secondary lg:dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
 						<Button
 							icon="first_page"
 							onClick={() => goToNode(rootNode)}
