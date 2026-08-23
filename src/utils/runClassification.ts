@@ -9,7 +9,7 @@ import {
 } from "./detectMaterialSacrifice";
 
 type runClassificationProps = {
-	currStockfish: { evaluation: string, pv: PV[] };
+	currStockfish: { evaluation: string; pv: PV[] };
 	prevStockfish: { evaluation: string; bestMove: string; pv: PV[] };
 	prev2Stockfish: { evaluation: string };
 	pgn: string;
@@ -91,14 +91,14 @@ export const runClassification = async ({
 		const isOnlyGoodMove = pvDiff > 150;
 		const isNotAlreadyWinning = line2Score < 400;
 
-		// check if a move is not an obvious capture
+		// check if a move is not an obvious capture or trade
 		const lastMove = chess.history({ verbose: true }).at(-1);
 		const capturedPiece = lastMove?.captured;
 		const capturingPiece = lastMove?.piece;
 		const defenders = chess.attackers(lastMove?.to!, colorTurn);
 		const isHangingPieceCapture = capturedPiece && defenders.length === 0;
 
-		const isObviousCapture = Boolean(
+		const isObviousCaptureOrTrade = Boolean(
 			(capturedPiece &&
 				capturingPiece &&
 				PIECE_VALUES[capturedPiece] >= PIECE_VALUES[capturingPiece]) ||
@@ -124,7 +124,7 @@ export const runClassification = async ({
 			isOnlyGoodMove &&
 			isNotAlreadyWinning &&
 			isDrawnOrWinning &&
-			!isObviousCapture;
+			!isObviousCaptureOrTrade;
 
 		if (isGreat) {
 			return { classification: "great" };
@@ -134,10 +134,16 @@ export const runClassification = async ({
 	// best moves
 	const currLine = currStockfish.pv.at(0);
 	const prevLine = prevStockfish.pv.at(0);
-	const mateDecreased = currLine && prevLine && currLine.mate && prevLine.mate && Math.abs(currLine.score) < Math.abs(prevLine.score);
+	const mateDecreased =
+		currLine &&
+		prevLine &&
+		currLine.mate &&
+		prevLine.mate &&
+		Math.abs(currLine.score) < Math.abs(prevLine.score);
 	if (
 		movePlayed === prevStockfish.bestMove ||
-		currStockfish.evaluation === prevStockfish.evaluation || mateDecreased
+		currStockfish.evaluation === prevStockfish.evaluation ||
+		mateDecreased
 	) {
 		return { classification: "best" };
 	}
