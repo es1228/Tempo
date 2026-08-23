@@ -23,6 +23,5 @@ export const expectedPoints = (
 	else if (pointsDrop <= 0.2 && pointsDrop > 0.1) return "a mistake";
 	else if (pointsDrop <= 0.1 && pointsDrop > 0.05) return "an inaccuracy";
 	else if (pointsDrop <= 0.05 && pointsDrop > 0.02) return "good";
-	else if (pointsDrop <= 0.02 && pointsDrop > 0) return "excellent";
-	else return "best";
+	else return "excellent";
 };

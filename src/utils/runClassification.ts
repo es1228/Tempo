@@ -9,7 +9,7 @@ import {
 } from "./detectMaterialSacrifice";
 
 type runClassificationProps = {
-	currStockfish: { evaluation: string };
+	currStockfish: { evaluation: string, pv: PV[] };
 	prevStockfish: { evaluation: string; bestMove: string; pv: PV[] };
 	prev2Stockfish: { evaluation: string };
 	pgn: string;
@@ -59,11 +59,24 @@ export const runClassification = async ({
 		return { classification: "best" };
 	}
 
-	if (prevStockfish.pv.length === 2 && prevStockfish.pv.at(0)?.score !== undefined && prevStockfish.pv.at(1)?.score !== undefined) {
+	if (
+		prevStockfish.pv.length === 2 &&
+		prevStockfish.pv.at(0)?.score !== undefined &&
+		prevStockfish.pv.at(1)?.score !== undefined
+	) {
 		// brilliant and great moves
 
-		const line1Score = prevStockfish.pv.at(0)?.score!;
-		const line2Score = prevStockfish.pv.at(1)?.score!;
+		const line1 = prevStockfish.pv.at(0)!;
+		const line2 = prevStockfish.pv.at(1)!;
+
+		// format based on mate or centipawns
+		const lineSign = colorTurn === "w" ? 1 : -1;
+		const line1Score = line1.mate
+			? lineSign * (200 - Math.abs(line1.score))
+			: line1.score;
+		const line2Score = line2.mate
+			? lineSign * (200 - Math.abs(line2.score))
+			: line2.score;
 
 		const isbetterMovePlayed =
 			movePlayed && movePlayed === prevStockfish.bestMove;
@@ -72,9 +85,7 @@ export const runClassification = async ({
 		const isDrawnOrWinning = line1Score > -50;
 
 		// calculate difference between top 2 moves
-		const pvDiff =
-			line1Score -
-			line2Score;
+		const pvDiff = line1Score - line2Score;
 
 		// only good move + not already winning
 		const isOnlyGoodMove = pvDiff > 150;
@@ -121,7 +132,13 @@ export const runClassification = async ({
 	}
 
 	// best moves
-	if (movePlayed === prevStockfish.bestMove) {
+	const currLine = currStockfish.pv.at(0);
+	const prevLine = prevStockfish.pv.at(0);
+	const mateDecreased = currLine && prevLine && currLine.mate && prevLine.mate && Math.abs(currLine.score) < Math.abs(prevLine.score);
+	if (
+		movePlayed === prevStockfish.bestMove ||
+		currStockfish.evaluation === prevStockfish.evaluation || mateDecreased
+	) {
 		return { classification: "best" };
 	}
 
