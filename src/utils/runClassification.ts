@@ -70,7 +70,7 @@ export const runClassification = async ({
 		const line2 = prevStockfish.pv.at(1)!;
 
 		// format based on mate or centipawns
-		const lineSign = colorTurn === "w" ? 1 : -1;
+		const lineSign = colorTurn === "b" ? 1 : -1;
 		const line1Score = line1.mate
 			? lineSign * (200 - Math.abs(line1.score))
 			: line1.score;
