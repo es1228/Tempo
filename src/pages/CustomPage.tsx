@@ -16,7 +16,7 @@ const CustomPage = () => {
 		whitePieceTypes,
 		blackPieceTypes,
 		squareWidth,
-		setChessPosition
+		setChessPosition,
 	} = useCustomBoard(
 		new Chess("8/8/8/8/8/8/8/8 w - - 0 1", { skipValidation: true }),
 	);
@@ -40,7 +40,7 @@ const CustomPage = () => {
 	const handleImport = (data: string) => {
 		if (!data) return;
 		setChessPosition(data);
-		chessGame.load(data, {skipValidation: true});
+		chessGame.load(data, { skipValidation: true });
 		changeTurn(checkActivePlayer(data));
 		setCustomFen(data);
 		setIsDialogOpen(false);
@@ -126,7 +126,12 @@ const CustomPage = () => {
 									}
 								}}
 							/>
-							<Button text="Import" icon="download" isPrimary onClick={() => setIsDialogOpen(true)}/>
+							<Button
+								text="Import"
+								icon="download"
+								isPrimary
+								onClick={() => setIsDialogOpen(true)}
+							/>
 							<Dropdown
 								selectedValue={turnToMove}
 								handleChange={(e) =>
@@ -139,7 +144,15 @@ const CustomPage = () => {
 								isPrimary
 								isOnTop
 							/>
-							<Button icon="content_copy" onClick={() => navigator.clipboard.writeText(chessGame.fen())}/>
+							<Button
+								icon="content_copy"
+								onClick={() => {
+									navigator.clipboard.writeText(
+										chessGame.fen(),
+									);
+									alert("Position FEN Copied")
+								}}
+							/>
 						</div>
 					</ChessboardProvider>
 				</div>

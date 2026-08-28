@@ -49,7 +49,7 @@ const GameOptionsDialog = ({
 	if (!isDialogOpen) return null;
 
 	return (
-		<div className="bg-on-bg dark:bg-on-bg-dark fixed top-1/2 left-1/2 z-10000 h-screen w-screen -translate-x-1/2 -translate-y-1/2 rounded-3xl p-4 lg:p-6 lg:mt-9 lg:h-2/3 lg:w-1/2">
+		<div className="bg-on-bg dark:bg-on-bg-dark fixed top-7/15 left-1/2 z-10000 h-screen w-screen -translate-x-1/2 -translate-y-1/2 rounded-3xl p-4 lg:p-6 lg:mt-9 lg:h-2/3 lg:w-1/2 overflow-auto">
 			<div className="mt-20 space-y-6 lg:mt-0">
 				<h1 className="text-3xl">Game Options</h1>
 				<TextInput

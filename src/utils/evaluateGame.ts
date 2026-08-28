@@ -37,7 +37,7 @@ export const evaluateOnWorker = async (
 
 		// listen for message
 		const handleMessage = (event: MessageEvent) => {
-			//console.log(event.data);
+			console.log(event.data);
 
 			// extract evaluation
 			if (event.data.includes("info") && event.data.includes("score")) {
@@ -119,6 +119,7 @@ export const evaluateOnWorker = async (
 		stockfish.addEventListener("message", handleMessage);
 		stockfish.postMessage(`setoption name MultiPV value ${lines}`);
 		stockfish.postMessage(`setoption name Skill Level value ${skill ?? 20}`)
+		stockfish.postMessage("setoption name Hash value 128");
 		stockfish.postMessage(`position fen ${fen}`);
 		stockfish.postMessage(`go depth ${depth}`);
 	});

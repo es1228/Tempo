@@ -119,7 +119,7 @@ const GamePage = () => {
 					{isFlipped ? (
 						<div className="flex flex-row items-center gap-2">
 							<PlayerContainer text={whiteText} />
-							{initialTime !== Infinity && (
+							{initialTime && initialTime !== Infinity && (
 								<TimeContainer
 									text={whiteTimeRemaining.toString()}
 								/>
@@ -128,7 +128,7 @@ const GamePage = () => {
 					) : (
 						<div className="flex flex-row items-center gap-2">
 							<PlayerContainer text={blackText} />
-							{initialTime !== Infinity && (
+							{initialTime && initialTime !== Infinity && (
 								<TimeContainer
 									text={blackTimeRemaining.toString()}
 								/>
@@ -186,7 +186,7 @@ const GamePage = () => {
 					{isFlipped ? (
 						<div className="flex flex-row items-center gap-2">
 							<PlayerContainer text={blackText} />
-							{initialTime !== Infinity && (
+							{initialTime && initialTime !== Infinity && (
 								<TimeContainer
 									text={blackTimeRemaining.toString()}
 								/>
@@ -195,7 +195,7 @@ const GamePage = () => {
 					) : (
 						<div className="flex flex-row items-center gap-2">
 							<PlayerContainer text={whiteText} />
-							{initialTime !== Infinity && (
+							{initialTime && initialTime !== Infinity && (
 								<TimeContainer
 									text={whiteTimeRemaining.toString()}
 								/>

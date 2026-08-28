@@ -397,20 +397,22 @@ const useBoard = ({
 			const worker = new Worker(
 				`${import.meta.env.BASE_URL}stockfish/stockfish-18-lite.js`,
 			);
-			const result = await evaluateOnWorker(worker, chessPosition, 20, 1, engineStrength);
+			const result = await evaluateOnWorker(
+				worker,
+				chessPosition,
+				15,
+				1,
+				engineStrength,
+			);
 			const bestMove = result.bestMove;
 			worker.terminate();
 
 			if (isEngineTurn && bestMove && !chessGame.isGameOver()) {
-				const timer = setTimeout(() => {
-					try {
-						console.log(bestMove);
-						commitMoveAndBranch("a1", "a2", "q", bestMove);
-					} catch {
-						console.error("Move Failed");
-					}
-				}, 300);
-				return () => clearTimeout(timer);
+				try {
+					commitMoveAndBranch("a1", "a2", "q", bestMove);
+				} catch {
+					console.error("Move Failed");
+				}
 			}
 		};
 		engineMove();
