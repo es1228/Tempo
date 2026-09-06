@@ -26,36 +26,44 @@ const LinesContainer = ({ chessPosition, pv }: LinesContainerProps) => {
 		<div className="bg-on-bg-secondary dark:bg-on-bg-dark-secondary w-full space-y-2 rounded-3xl p-4">
 			<h1>Engine</h1>
 			<hr className="my-2 rounded" />
-			<div className="flex items-center max-w-full overflow-auto lg:max-w-65">
-				<p
-					className="float-left mr-2 h-fit w-fit rounded-3xl p-2 text-sm"
-					style={
-						score1.at(0) === "+"
-							? { backgroundColor: "white", color: "black" }
-							: { backgroundColor: "black", color: "white" }
-					}
-				>
-					{score1}
-				</p>
-				<p>
-					{convertLineToSan(pv[0]?.moves, chessPosition)?.split(" ").splice(0, 6).join(" ")}
-				</p>
-			</div>
-			<hr className="my-2 rounded" />
-			<div className="flex items-center max-w-full overflow-auto lg:max-w-65">
-				<p
-					className="float-left mr-2 h-fit w-fit rounded-3xl p-2 text-sm"
-					style={
-						score2.at(0) === "+"
-							? { backgroundColor: "white", color: "black" }
-							: { backgroundColor: "black", color: "white" }
-					}
-				>
-					{score2}
-				</p>
-				<p>
-					{convertLineToSan(pv[1]?.moves, chessPosition)?.split(" ").splice(0, 6).join(" ")}
-				</p>
+			<div className="max-w-full items-center space-y-4 overflow-auto lg:max-w-65">
+				{pv
+					.filter((pv) => pv !== null)
+					.map((pv) => {
+						let score =
+							activePlayer === "w"
+								? formatter.format(pv.score / 100)
+								: formatter.format(pv.score / -100);
+						if (pv.mate)
+							score = `${score1[0]}M${Math.abs(pv.score)}`;
+
+						return (
+							<div className="flex items-center">
+								<p
+									className="float-left mr-2 h-fit w-fit rounded-3xl p-2 text-sm"
+									style={
+										score.at(0) === "+"
+											? {
+													backgroundColor: "white",
+													color: "black",
+												}
+											: {
+													backgroundColor: "black",
+													color: "white",
+												}
+									}
+								>
+									{score1}
+								</p>
+								<p>
+									{convertLineToSan(pv.moves, chessPosition)
+										?.split(" ")
+										.splice(0, 6)
+										.join(" ")}
+								</p>
+							</div>
+						);
+					})}
 			</div>
 		</div>
 	);
