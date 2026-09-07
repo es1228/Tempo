@@ -4,10 +4,11 @@ import { Chessboard, ChessboardProvider, SparePiece } from "react-chessboard";
 import { useBoardColors, useCustomFen } from "../globalContext";
 import Button from "../components/Button";
 import Dropdown from "../components/Dropdown";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { checkLegalFen } from "../utils/checkLegalFen";
 import ImportDialog from "../components/ImportDialog";
 import { checkActivePlayer } from "../utils/checkActivePlayer";
+import AlertDialog from "../components/AlertDialog";
 
 const CustomPage = () => {
 	const {
@@ -23,6 +24,19 @@ const CustomPage = () => {
 	const { boardTheme } = useBoardColors();
 
 	const { setCustomFen } = useCustomFen();
+
+	const [alertText, setAlertText] = useState<string>("");
+	const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
+	useEffect(() => {
+		if (!alertText) return;
+
+		setIsAlertOpen(true);
+		setTimeout(() => {
+			setIsAlertOpen(false);
+			setAlertText("");
+		}, 3000);
+	}, [alertText]);
 
 	const [turnToMove, setTurnToMove] = useState<Color>("w");
 
@@ -48,6 +62,8 @@ const CustomPage = () => {
 
 	return (
 		<div className="mx-4 mt-22 flex justify-center gap-2">
+			<AlertDialog text={alertText} isOpen={isAlertOpen}/>
+
 			<ImportDialog
 				values={["FEN"]}
 				isDialogOpen={isDialogOpen}
@@ -120,8 +136,8 @@ const CustomPage = () => {
 								onClick={() => {
 									if (checkLegalFen(chessGame.fen())) {
 										setCustomFen(chessGame.fen());
-										alert(
-											"Position Saved. Enable Custom Position in Play page to play.",
+										setAlertText(
+											"Position Saved. Enable Custom Position To Load Against Engine.",
 										);
 									}
 								}}
@@ -150,7 +166,7 @@ const CustomPage = () => {
 									navigator.clipboard.writeText(
 										chessGame.fen(),
 									);
-									alert("Position FEN Copied")
+									setAlertText("Position FEN Copied");
 								}}
 							/>
 						</div>

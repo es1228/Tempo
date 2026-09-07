@@ -5,6 +5,7 @@ import useBoard from "../hooks/useBoard";
 import {
 	useCallback,
 	useMemo,
+	useRef,
 	useState,
 	type CSSProperties,
 	type ReactNode,
@@ -53,6 +54,23 @@ const ReviewPage = () => {
 		boardOrientation: isFlipped ? "black" : "white",
 	});
 
+	const scrollRef = useRef<HTMLDivElement>(null);
+	const [hasScrolled, setHasScrolled] = useState<boolean>(true);
+
+	const handleScroll = () => {
+		const element = scrollRef.current;
+		if (!element) return;
+
+		setHasScrolled(true);
+	};
+
+	const scrollToBottom = () => {
+		const element = scrollRef.current;
+		if (!element) return;
+
+		element.scrollTo({ top: element.scrollHeight, behavior: "smooth" });
+	};
+
 	const { getCachedEval, setCachedEval } = useEvalCache();
 
 	const { classification, opening, prevBestMove, evaluation, pv } =
@@ -66,6 +84,7 @@ const ReviewPage = () => {
 		setIsDialogOpen(false);
 		setIsReviewInProgress(true);
 		const result = await runGameReview(data, getCachedEval, setCachedEval);
+		setHasScrolled(false);
 		setIsReviewInProgress(false);
 		setStats(result);
 		setPanel("Report");
@@ -193,7 +212,11 @@ const ReviewPage = () => {
 					</div>
 				</div>
 				<div className="bg-on-bg dark:bg-on-bg-dark mx-4 mb-40 flex flex-col justify-center gap-2 overflow-auto rounded-3xl p-2 lg:mt-40 lg:mr-10 lg:mb-0 lg:h-120 lg:w-fit lg:scale-125">
-					<div className="space-y-2 overflow-auto">
+					<div
+						className="space-y-2 overflow-auto"
+						ref={scrollRef}
+						onScroll={handleScroll}
+					>
 						<div className="flex flex-row items-center justify-between">
 							<h1 className="p-2 text-2xl">Game Review</h1>
 							<Button
@@ -271,40 +294,64 @@ const ReviewPage = () => {
 								/>
 							</>
 						)}
+						{!hasScrolled && (
+							<div className="outline-text dark:outline-text-dark fixed bottom-20 left-1/2 -translate-x-1/2 animate-bounce rounded-full outline-2">
+								<Button
+									onClick={scrollToBottom}
+									icon="south"
+									isSecondary
+								/>
+							</div>
+						)}
 					</div>
-					<div className="fixed bottom-25 left-5 right-5 lg:static backdrop-blur-3xl bg-on-bg-secondary/20 dark:bg-on-bg-dark-secondary/40 lg:bg-on-bg-secondary lg:dark:bg-on-bg-dark-secondary mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2">
-						<Button
-							icon="first_page"
-							onClick={() => goToNode(rootNode)}
-						/>
-						<Button
-							icon="arrow_back"
-							onClick={() =>
-								currentNode.parent &&
-								goToNode(currentNode.parent)
-							}
-						/>
-						<Button
-							icon="cached"
-							onClick={() => setIsFlipped(!isFlipped)}
-						/>
-						<Button
-							icon="arrow_forward"
-							onClick={() =>
-								currentNode.children.length > 0 &&
-								goToNode(currentNode.children[0])
-							}
-						/>
-						<Button
-							icon="last_page"
-							onClick={() => {
-								let curr = rootNode;
+					<div className="bg-on-bg-secondary/20 dark:bg-on-bg-dark-secondary/40 lg:bg-on-bg-secondary lg:dark:bg-on-bg-dark-secondary fixed right-5 bottom-25 left-5 mt-auto flex flex-row justify-center gap-2 rounded-3xl p-2 backdrop-blur-3xl lg:static">
+						<div className="-mt-2 -space-y-2 text-center text-xs">
+							<Button
+								icon="first_page"
+								onClick={() => goToNode(rootNode)}
+							/>
+							<p>Start</p>
+						</div>
+						<div className="-mt-2 -space-y-2 text-center text-xs">
+							<Button
+								icon="arrow_back"
+								onClick={() =>
+									currentNode.parent &&
+									goToNode(currentNode.parent)
+								}
+							/>
+							<p>Back</p>
+						</div>
+						<div className="-mt-2 -space-y-2 text-center text-xs">
+							<Button
+								icon="cached"
+								onClick={() => setIsFlipped(!isFlipped)}
+							/>
+							<p>Flip</p>
+						</div>
+						<div className="-mt-2 -space-y-2 text-center text-xs">
+							<Button
+								icon="arrow_forward"
+								onClick={() =>
+									currentNode.children.length > 0 &&
+									goToNode(currentNode.children[0])
+								}
+							/>
+							<p>Next</p>
+						</div>
+						<div className="-mt-2 -space-y-2 text-center text-xs">
+							<Button
+								icon="last_page"
+								onClick={() => {
+									let curr = rootNode;
 
-								while (curr.children.length > 0)
-									curr = curr.children[0];
-								goToNode(curr);
-							}}
-						/>
+									while (curr.children.length > 0)
+										curr = curr.children[0];
+									goToNode(curr);
+								}}
+							/>
+							<p>End</p>
+						</div>
 					</div>
 				</div>
 			</div>
